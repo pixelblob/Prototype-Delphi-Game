@@ -242,36 +242,34 @@ var
 begin
 
   if forwardKey then begin
-    PlayerY := PlayerY - 10;
+    PlayerY := PlayerY - 10+round(10* CURRENTFPS / 60);
 
     if rightKey then begin
-      PlayerX := PlayerX - 4;
-      PlayerY := PlayerY + 4;
+      PlayerX := PlayerX - 4+round(4* CURRENTFPS / 60);
+      PlayerY := PlayerY + 4+round(4* CURRENTFPS / 60);
     end
     else if leftKey then begin
-      PlayerX := PlayerX + 4;
-      PlayerY := PlayerY + 4;
+      PlayerX := PlayerX + 4+round(4* CURRENTFPS / 60);
+      PlayerY := PlayerY + 4+round(4* CURRENTFPS / 60);
     end;
 
   end;
   if backwardKey then begin
-    PlayerY := PlayerY + 10;
+    PlayerY := PlayerY + 10+round(10* CURRENTFPS / 60);
 
     if rightKey then begin
-      PlayerX := PlayerX - 4;
-      PlayerY := PlayerY - 4;
+      PlayerX := PlayerX - 4+round(4* CURRENTFPS / 60);
+      PlayerY := PlayerY - 4+round(4* CURRENTFPS / 60);
     end
     else if leftKey then begin
-      PlayerX := PlayerX + 4;
-      PlayerY := PlayerY - 4;
+      PlayerX := PlayerX + 4+round(4* CURRENTFPS / 60);
+      PlayerY := PlayerY - 4+round(4* CURRENTFPS / 60);
     end;
 
   end;
   if leftKey then begin
-    PlayerX := PlayerX - 10;
-  end;
-  if rightKey then begin
-    PlayerX := PlayerX + 10;
+    PlayerX := PlayerX - 10+round(10* CURRENTFPS / 60);
+    PlayerX := PlayerX + 10+round(10* CURRENTFPS / 60);
   end;
 
   // Player Enter Top of screen
