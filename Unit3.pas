@@ -32,14 +32,11 @@ type
     gameLoop: TTimer;
     LevelImage: TImage;
     FpsReset: TTimer;
-    screenBlankTimer: TTimer;
-    warning: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure gameLoopTimer(Sender: TObject);
     procedure FpsResetTimer(Sender: TObject);
-    procedure screenBlankTimerTimer(Sender: TObject);
     procedure Image1Click(Sender: TObject);
   private
     { Private declarations }
@@ -52,8 +49,8 @@ var
   jpg: TJPEGImage;
   forwardKey, backwardKey, leftKey, rightKey: Boolean;
   grassTileImages: array [1 .. 6] of TJPEGImage;
-  bush, tree1, tree2, tree3, tree4, playerImage, selectorImage, nopeSelectorImage,
-    heartImage: TGraphic;
+  bush, tree1, tree2, tree3, tree4, playerImage, selectorImage,
+    nopeSelectorImage, heartImage: TGraphic;
   PlayerX, PlayerActualX, PlayerY, PlayerActualY, oldWindowX, oldWindowY,
     CURRENTFPS, FPS, cursorGridX, cursorGridY, playerQuadX,
     playerQuadY: Integer;
@@ -69,11 +66,13 @@ implementation
 
 {$R *.dfm}
 
-function getGameObject(x, y: Integer) : TGameObject;
-var I: Integer;
-var occupied: Boolean;
+function getGameObject(x, y: Integer): TGameObject;
+var
+  I: Integer;
+var
+  occupied: Boolean;
 begin
-occupied := False;
+  occupied := False;
   for I := 0 to Length(gameObjects) - 1 do begin
     if ((gameObjects[I].x = x) and (gameObjects[I].y = y)) then begin
       result := gameObjects[I];
@@ -89,7 +88,7 @@ procedure addGameObject(x, y: Integer);
 var
   newGameObject: TGameObject;
   objectExistsAlready: Boolean;
-  I : Integer;
+  I: Integer;
 begin
   objectExistsAlready := False;
 
@@ -109,8 +108,6 @@ begin
     gameObjects[ High(gameObjects)] := newGameObject;
   end;
 
-
-  
 end;
 
 procedure setCaption();
@@ -126,8 +123,6 @@ procedure placeGround();
 var
   x, y: Integer;
 begin
-
-  // writeln(inttostr(PlayerX) + ' ' + inttostr(Form3.ClientWidth)); 
 
   Form3.Image1.Picture.Bitmap.Width := Form3.Image1.Width;
   Form3.Image1.Picture.Bitmap.Height := Form3.Image1.Height;
@@ -183,7 +178,7 @@ begin
   T.Free;
 
   T := TResourceStream.Create(hInstance, 'PngImage_18', RT_RCDATA);
-  nopeselectorImage.LoadFromStream(T);
+  nopeSelectorImage.LoadFromStream(T);
   T.Free;
 
   T := TResourceStream.Create(hInstance, 'PngImage_17', RT_RCDATA);
@@ -281,22 +276,22 @@ begin
     PlayerX := PlayerX + 10;
   end;
 
-  if PlayerY < -32 then begin // Player Enter Top 
+  if PlayerY < -32 then begin // Player Enter Top
     PlayerActualY := PlayerActualY - Form3.ClientHeight;
     PlayerY := Form3.ClientHeight - 32;
     writeln('Enter Top');
   end
-  else if PlayerY > Form3.ClientHeight - 32 then begin // Player Enter Bottom 
+  else if PlayerY > Form3.ClientHeight - 32 then begin // Player Enter Bottom
     PlayerActualY := PlayerActualY + Form3.ClientHeight;
     PlayerY := -32;
     writeln('Enter Bottom');
   end
-  else if PlayerX < -32 then begin // Player Enter Left 
+  else if PlayerX < -32 then begin // Player Enter Left
     PlayerX := Form3.ClientWidth - 32;
     PlayerActualX := PlayerActualX - Form3.ClientWidth;
     writeln('Enter Left');
   end
-  else if PlayerX > Form3.ClientWidth - 32 then begin // Player Enter Right 
+  else if PlayerX > Form3.ClientWidth - 32 then begin // Player Enter Right
     PlayerX := -32;
     PlayerActualX := PlayerActualX + Form3.ClientWidth;
     writeln('Enter Right');
@@ -306,13 +301,6 @@ begin
     Form3.LevelImage.canvas, Form3.LevelImage.canvas.ClipRect);
 
   for I := 0 to Length(gameObjects) - 1 do begin
-    // writeln('OBJECT POSITION'); 
-    // writeln(Math.Floor(gameObjects[I].X*32 / form3.ClientWidth)); 
-    // writeln(Math.Floor(gameObjects[I].Y*32 / form3.ClientHeight)); 
-    // writeln('PLAYER POSITION'); 
-    // writeln(Math.Floor(PlayerActualX / form3.ClientWidth)); 
-    // writeln(Math.Floor(PlayerActualY / form3.ClientHeight)); 
-
     playerQuadX := Math.Floor(PlayerActualX / Form3.ClientWidth);
     playerQuadY := Math.Floor(PlayerActualY / Form3.ClientHeight);
 
@@ -321,7 +309,6 @@ begin
           = playerQuadY)) then begin
       Form3.Image1.canvas.Draw((gameObjects[I].x) * 32 - playerQuadX * 32 * 40,
         (gameObjects[I].y) * 32 - playerQuadY * 32 * 20, playerImage);
-      // writeln('DRAWING OBJECT!!!!!!!!!!!!!!!!!!!!!'); 
     end;
 
   end;
@@ -336,26 +323,21 @@ begin
   cursorGridX := round((pt.x - 16) / 32);
   cursorGridY := round((pt.y - 16) / 32);
 
-  if getGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20) <> nil then begin
-    Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32, nopeSelectorImage);
-  end else begin
+  if getGameObject(cursorGridX + playerQuadX * 40,
+    cursorGridY + playerQuadY * 20) <> nil then begin
+    Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32,
+      nopeSelectorImage);
+  end
+  else begin
     Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32, selectorImage);
   end;
-
-
-
 
   for I := 0 to 5 do
     Form3.Image1.canvas.Draw(5, (32 * I) + 5, heartImage);
 
-  // Distance := Sqrt(Sqr(PlayerActualX+PlayerX-pt.x)+Sqr(PlayerActualY+PlayerY-pt.y)); 
-
   setCaption();
 
   FPS := FPS + 1;
-
-  // writeln(oldWindowX); 
-  // writeln(Form3.Left); 
 
 end;
 
@@ -363,24 +345,6 @@ procedure TForm3.Image1Click(Sender: TObject);
 begin
   writeln('placeing');
   addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
-end;
-
-procedure TForm3.screenBlankTimerTimer(Sender: TObject);
-begin
-
-  if ((oldWindowX <> Form3.Left) or (oldWindowY <> Form3.Top)) then begin
-    gameLoop.Enabled := False;
-
-    warning.Visible := True;
-  end;
-
-  if ((oldWindowX = Form3.Left) and (oldWindowY = Form3.Top)) then begin
-    gameLoop.Enabled := True;
-    warning.Visible := False;
-  end;
-
-  oldWindowX := Form3.Left;
-  oldWindowY := Form3.Top;
 end;
 
 end.

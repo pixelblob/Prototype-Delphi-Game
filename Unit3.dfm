@@ -34,22 +34,6 @@ object Form3: TForm3
     Height = 105
     Visible = False
   end
-  object warning: TLabel
-    Left = 320
-    Top = 256
-    Width = 640
-    Height = 78
-    Caption = 
-      'Pausing the so your eyes dont have to experience my game flashin' +
-      'g like hell'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWhite
-    Font.Height = -32
-    Font.Name = 'Tahoma'
-    Font.Style = [fsBold, fsUnderline]
-    ParentFont = False
-    WordWrap = True
-  end
   object gameLoop: TTimer
     Interval = 1
     OnTimer = gameLoopTimer
@@ -60,11 +44,5 @@ object Form3: TForm3
     OnTimer = FpsResetTimer
     Left = 1024
     Top = 384
-  end
-  object screenBlankTimer: TTimer
-    Interval = 250
-    OnTimer = screenBlankTimerTimer
-    Left = 608
-    Top = 464
   end
 end
