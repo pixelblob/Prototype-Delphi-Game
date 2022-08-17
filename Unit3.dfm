@@ -35,9 +35,9 @@ object Form3: TForm3
     Visible = False
   end
   object warning: TLabel
-    Left = 244
-    Top = 264
-    Width = 613
+    Left = 320
+    Top = 256
+    Width = 640
     Height = 78
     Caption = 
       'Pausing the so your eyes dont have to experience my game flashin' +
