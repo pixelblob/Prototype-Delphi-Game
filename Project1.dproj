@@ -1,0 +1,722 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{3B5B4FD6-0C63-4D6E-954A-B208CEFCFDEA}</ProjectGuid>
+			<ProjectVersion>12.0</ProjectVersion>
+			<MainSource>Project1.dpr</MainSource>
+			<Config Condition="'$(Config)'==''">Debug</Config>
+			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
+			<Cfg_1>true</Cfg_1>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
+			<Cfg_2>true</Cfg_2>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_DependencyCheckOutputName>Project1.exe</DCC_DependencyCheckOutputName>
+			<DCC_ImageBase>00400000</DCC_ImageBase>
+			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
+			<DCC_Platform>x86</DCC_Platform>
+			<DCC_E>false</DCC_E>
+			<DCC_N>false</DCC_N>
+			<DCC_S>false</DCC_S>
+			<DCC_F>false</DCC_F>
+			<DCC_K>false</DCC_K>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_1)'!=''">
+			<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+			<DCC_DebugInformation>false</DCC_DebugInformation>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2)'!=''">
+			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+		</PropertyGroup>
+		<ItemGroup>
+			<DelphiCompile Include="Project1.dpr">
+				<MainSource>MainSource</MainSource>
+			</DelphiCompile>
+			<DCCReference Include="Unit3.pas">
+				<Form>Form3</Form>
+			</DCCReference>
+			<RcItem Include="images\man_01.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>man_01</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_02.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_2</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_03.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_3</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_04.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_4</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_05.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_5</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_06.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_6</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_07.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_7</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_08.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_8</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_09.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_9</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_10.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_10</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_11.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_11</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_12.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_12</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_13.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_13</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_14.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_14</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_15.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_15</ResourceId>
+			</RcItem>
+			<RcItem Include="images\man_16.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_16</ResourceId>
+			</RcItem>
+			<RcItem Include="images\nature_pixel_art_3_6_tree_final_02.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_16</ResourceId>
+			</RcItem>
+			<RcItem Include="images\nature_pixel_art_3_6_tree_final_03.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_17</ResourceId>
+			</RcItem>
+			<RcItem Include="images\nature_pixel_art_3_6_tree_final_04.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_18</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_02.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_19</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_03.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_20</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_04.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_21</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_05.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_22</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_06.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_23</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_07.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_24</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_08.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_25</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_09.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_26</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_10.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_27</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_11.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_28</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_12.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_29</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_13.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_30</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_14.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_31</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_15.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_32</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_16.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_33</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_17.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_34</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_18.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_35</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_19.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_36</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_20.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_37</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_21.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_38</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_22.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_39</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_23.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_40</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_24.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_41</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_25.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_42</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_26.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_43</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_27.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_44</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_28.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_45</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_29.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_46</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_30.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_47</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_31.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_48</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_32.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_49</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_33.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_50</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_34.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_51</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_35.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_52</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_36.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_53</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_37.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_54</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_38.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_55</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_39.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_56</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_40.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_57</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_41.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_58</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_42.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_59</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_43.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_60</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_44.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_61</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_45.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_62</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_46.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_63</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_47.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_64</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_48.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_65</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_49.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_66</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_50.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_67</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_51.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_68</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_52.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_69</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_58.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_70</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_59.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_71</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_60.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_72</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_61.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_73</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_62.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_74</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_63.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_75</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_64.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_76</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_65.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_77</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_66.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_78</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_67.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_79</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_68.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_80</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_69.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_81</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_70.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_82</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_71.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_83</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_72.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_84</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_73.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_85</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_74.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_86</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_75.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_87</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_76.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_88</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_77.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_89</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_78.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_90</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_79.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_91</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_80.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_92</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_81.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_93</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_82.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_94</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_83.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_95</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_84.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_96</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_85.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_97</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_86.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_98</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_87.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_99</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_88.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_100</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_89.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_101</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_90.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_102</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_91.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_103</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_92.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_104</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_93.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_105</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_94.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_106</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_95.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_107</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_96.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_108</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_97.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_109</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_98.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_110</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_99.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_111</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_100.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_112</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_101.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_113</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_102.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_114</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_103.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_115</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_104.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_116</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_105.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_117</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_113.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_118</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_114.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_119</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_115.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_120</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_116.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_121</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_117.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_122</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_118.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_123</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_119.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_124</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_121.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_125</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_123.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_126</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_124.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_127</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_125.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_128</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_127.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_129</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_128.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_130</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_129.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_131</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_130.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_132</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_131.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_133</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_132.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_134</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_133.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_135</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_135.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_136</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_136.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_137</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_137.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_138</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_138.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_139</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_139.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_140</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_140.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_141</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_141.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_142</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_143.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_143</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_144.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_144</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_145.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_145</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_146.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_146</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_147.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_147</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_148.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_148</ResourceId>
+			</RcItem>
+			<RcItem Include="images\TileSet_V2_149.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_149</ResourceId>
+			</RcItem>
+			<RcItem Include="images\tree1.jpg">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>JpgImage_150</ResourceId>
+			</RcItem>
+			<RcItem Include="images\selected.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_1</ResourceId>
+			</RcItem>
+			<RcItem Include="images\heart32.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_17</ResourceId>
+			</RcItem>
+			<RcItem Include="images\nopeSelector.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_18</ResourceId>
+			</RcItem>
+			<BuildConfiguration Include="Base">
+				<Key>Base</Key>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Debug">
+				<Key>Cfg_2</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Release">
+				<Key>Cfg_1</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+		</ItemGroup>
+		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+		<ProjectExtensions>
+			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Delphi.Personality>
+					<Source>
+						<Source Name="MainSource">Project1.dpr</Source>
+					</Source>
+					<Parameters>
+						<Parameters Name="UseLauncher">False</Parameters>
+						<Parameters Name="LoadAllSymbols">True</Parameters>
+						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+					</Parameters>
+					<VersionInfo>
+						<VersionInfo Name="IncludeVerInfo">False</VersionInfo>
+						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
+						<VersionInfo Name="MajorVer">1</VersionInfo>
+						<VersionInfo Name="MinorVer">0</VersionInfo>
+						<VersionInfo Name="Release">0</VersionInfo>
+						<VersionInfo Name="Build">0</VersionInfo>
+						<VersionInfo Name="Debug">False</VersionInfo>
+						<VersionInfo Name="PreRelease">False</VersionInfo>
+						<VersionInfo Name="Special">False</VersionInfo>
+						<VersionInfo Name="Private">False</VersionInfo>
+						<VersionInfo Name="DLL">False</VersionInfo>
+						<VersionInfo Name="Locale">1033</VersionInfo>
+						<VersionInfo Name="CodePage">1252</VersionInfo>
+					</VersionInfo>
+					<VersionInfoKeys>
+						<VersionInfoKeys Name="CompanyName"/>
+						<VersionInfoKeys Name="FileDescription"/>
+						<VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="InternalName"/>
+						<VersionInfoKeys Name="LegalCopyright"/>
+						<VersionInfoKeys Name="LegalTrademarks"/>
+						<VersionInfoKeys Name="OriginalFilename"/>
+						<VersionInfoKeys Name="ProductName"/>
+						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="Comments"/>
+					</VersionInfoKeys>
+				</Delphi.Personality>
+			</BorlandProject>
+			<ProjectFileVersion>12</ProjectFileVersion>
+		</ProjectExtensions>
+	</Project>
