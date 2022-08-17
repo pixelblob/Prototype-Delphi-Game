@@ -247,9 +247,8 @@ begin
     if rightKey then begin
       PlayerX := PlayerX - 4;
       PlayerY := PlayerY + 4;
-    end;
-
-    if leftKey then begin
+    end
+    else if leftKey then begin
       PlayerX := PlayerX + 4;
       PlayerY := PlayerY + 4;
     end;
@@ -261,9 +260,8 @@ begin
     if rightKey then begin
       PlayerX := PlayerX - 4;
       PlayerY := PlayerY - 4;
-    end;
-
-    if leftKey then begin
+    end
+    else if leftKey then begin
       PlayerX := PlayerX + 4;
       PlayerY := PlayerY - 4;
     end;
@@ -276,22 +274,29 @@ begin
     PlayerX := PlayerX + 10;
   end;
 
-  if PlayerY < -32 then begin // Player Enter Top
+  // Player Enter Top of screen
+  if PlayerY < -32 then begin
     PlayerActualY := PlayerActualY - Form3.ClientHeight;
     PlayerY := Form3.ClientHeight - 32;
     writeln('Enter Top');
   end
-  else if PlayerY > Form3.ClientHeight - 32 then begin // Player Enter Bottom
+
+  // Player Enter Bottom of screen
+  else if PlayerY > Form3.ClientHeight - 32 then begin
     PlayerActualY := PlayerActualY + Form3.ClientHeight;
     PlayerY := -32;
     writeln('Enter Bottom');
   end
-  else if PlayerX < -32 then begin // Player Enter Left
+
+  // Player Enter LeftHand side of screen
+  else if PlayerX < -32 then begin
     PlayerX := Form3.ClientWidth - 32;
     PlayerActualX := PlayerActualX - Form3.ClientWidth;
     writeln('Enter Left');
   end
-  else if PlayerX > Form3.ClientWidth - 32 then begin // Player Enter Right
+
+  // Player Enter RightHand side of screen
+  else if PlayerX > Form3.ClientWidth - 32 then begin
     PlayerX := -32;
     PlayerActualX := PlayerActualX + Form3.ClientWidth;
     writeln('Enter Right');
@@ -343,7 +348,7 @@ end;
 
 procedure TForm3.Image1Click(Sender: TObject);
 begin
-  writeln('placeing');
+  writeln('Placing!');
   addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
 end;
 
