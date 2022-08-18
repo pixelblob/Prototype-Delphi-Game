@@ -33,6 +33,7 @@ type
     gameLoop: TTimer;
     LevelImage: TImage;
     FpsReset: TTimer;
+    cachedLevel: TImage;
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -86,6 +87,31 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure updateLevelCache;
+var
+  I, R, objectIndex: Integer;
+begin
+  for I := 0 to Length(gameObjects) - 1 do begin
+    if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX)
+        and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight)
+          = playerQuadY)) then begin
+      for R := 1 to Length(gameObjectTypes) do
+        if gameObjectTypes[R] = gameObjects[I].objectType then begin
+          objectIndex := R;
+        end;
+
+
+      // writeln(objectIndex);
+
+      Form3.cachedLevel.canvas.Draw
+        (gameObjects[I].x * 32 - playerQuadX * 32 * 40,
+        gameObjects[I].y * 32 - playerQuadY * 32 * 20,
+        gameObjectTextures[objectIndex]);
+    end;
+  end;
+  writeln('UPDATED LEVEL CACHE');
+end;
 
 function getGameObject(x, y: Integer): TGameObject;
 var
@@ -181,6 +207,9 @@ begin
   Form3.LevelImage.Width := Form3.Width;
   Form3.LevelImage.Height := Form3.Height;
 
+  Form3.cachedLevel.Width := Form3.Width;
+  Form3.cachedLevel.Height := Form3.Height;
+
   PlayerX := 0;
   PlayerY := 0;
 
@@ -240,15 +269,19 @@ begin
 
   placeGround;
 
-  for x := 0 to 40 do
-    for y := 0 to 20 do
-      addGameObject(x, y, 'brick');
+  //for x := 0 to 40 do
+  //  for y := 0 to 20 do
+   //   addGameObject(x, y, 'brick');
+
+  updateLevelCache;
 
 end;
 
 procedure TForm3.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
+  if Key = Word('P') then
+    updateLevelCache;
   if Key = Word('W') then
     forwardKey := True;
   if Key = Word('A') then
@@ -290,6 +323,7 @@ procedure setPlayerQuad;
 begin
   playerQuadX := Math.Floor(PlayerActualX / Form3.ClientWidth);
   playerQuadY := Math.Floor(PlayerActualY / Form3.ClientHeight);
+  updateLevelCache;
 end;
 
 procedure TForm3.gameLoopTimer(Sender: TObject);
@@ -298,6 +332,10 @@ var
 var
   frame: TGraphic;
   I, R, speed, objectIndex: Integer;
+  Bitmap: TPngImage;
+  tempcanvas : TCanvas;
+  WindowHandle : HWND;
+  ScreenDC,bufferDC : HDC;
 begin
 
   speed := 4;
@@ -367,26 +405,12 @@ begin
     setPlayerQuad;
   end;
 
+  //Draws the grass
   Form3.Image1.canvas.CopyRect(Form3.Image1.canvas.ClipRect,
     Form3.LevelImage.canvas, Form3.LevelImage.canvas.ClipRect);
 
-  for I := 0 to Length(gameObjects) - 1 do begin
-    if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX)
-        and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight)
-          = playerQuadY)) then begin
-      for R := 1 to Length(gameObjectTypes) do
-        if gameObjectTypes[R] = gameObjects[I].objectType then begin
-          objectIndex := R;
-        end;
 
-
-      // writeln(objectIndex);
-
-      Form3.Image1.canvas.Draw(gameObjects[I].x * 32 - playerQuadX * 32 * 40,
-        gameObjects[I].y * 32 - playerQuadY * 32 * 20,
-        gameObjectTextures[objectIndex]);
-    end;
-  end;
+    //Form3.Image1.canvas.Draw(0, 0, cachedLevel.);
 
   Form3.Image1.canvas.Draw(PlayerX + 16, PlayerY + 16, playerImage);
 
@@ -421,6 +445,7 @@ begin
   writeln('Placing!');
   addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20,
     'brick');
+    updateLevelCache;
 end;
 
 procedure TForm3.pauseGame;

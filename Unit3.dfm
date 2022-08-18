@@ -21,15 +21,22 @@ object Form3: TForm3
   PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
-    Left = 0
-    Top = 0
+    Left = 48
+    Top = 64
     Width = 105
     Height = 105
     OnClick = Image1Click
   end
   object LevelImage: TImage
-    Left = 336
-    Top = 88
+    Left = 368
+    Top = 112
+    Width = 105
+    Height = 105
+    Visible = False
+  end
+  object cachedLevel: TImage
+    Left = 320
+    Top = 344
     Width = 105
     Height = 105
     Visible = False
