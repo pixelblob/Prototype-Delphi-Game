@@ -50,43 +50,38 @@ type
 var
   Form3: TForm3;
   jpg: TJPEGImage;
-  png : TGraphic;
+  png: TGraphic;
   forwardKey, backwardKey, leftKey, rightKey: Boolean;
 
   grassTileImages: array [1 .. 6] of TJPEGImage;
-  bush, tree1, tree2, tree3, tree4, playerImage, selectorImage,
-    nopeSelectorImage, heartImage: TGraphic;
-  PlayerX, PlayerActualX, PlayerY, PlayerActualY, oldWindowX, oldWindowY,
-    CURRENTFPS, FPS, cursorGridX, cursorGridY, playerQuadX,
-    playerQuadY: Integer;
-  Seed: Integer = 69420;
   SelectedSlot: Integer = 0;
 
+  bush, tree1, tree2, tree3, tree4, playerImage, selectorImage,
+    nopeSelectorImage, heartImage, pauseScreen: TGraphic;
 
-  bush, tree1, tree2, tree3, tree4, playerImage,
-  selectorImage,nopeSelectorImage, heartImage, pauseScreen: TGraphic;
-
-    PlayerX, PlayerActualX, PlayerY, PlayerActualY,
-    oldWindowX, oldWindowY, playerQuadX, playerQuadY,
-    CURRENTFPS, FPS, cursorGridX, cursorGridY, paused: Integer;
-
+  PlayerX, PlayerActualX, PlayerY, PlayerActualY, oldWindowX, oldWindowY,
+    playerQuadX, playerQuadY, CURRENTFPS, FPS, cursorGridX, cursorGridY,
+    paused: Integer;
 
   Distance: Real;
   Seed: Integer = 69420;
-
-
-  grassTileImages: array [1 .. 6] of TJPEGImage;
   gameObjects: array of TGameObject;
 
 const
   gameObjectTypes: array [1 .. 2] of string = ('brick', 'man_01');
   gameObjectTextureNames: array [1 .. 2] of string = ('PngImage_19', 'man_01');
-  var
+
+var
   gameObjectTextures: array [1 .. 2] of TGraphic;
 
-
-  grassTileNames: array [1 .. 6] of string = ('JpgImage_65', 'JpgImage_66',
-    'JpgImage_67', 'JpgImage_68', 'JpgImage_69', 'JpgImage_70');
+  grassTileNames: array [1 .. 6] of string = (
+    'JpgImage_65',
+    'JpgImage_66',
+    'JpgImage_67',
+    'JpgImage_68',
+    'JpgImage_69',
+    'JpgImage_70'
+  );
 
 implementation
 
@@ -139,10 +134,10 @@ end;
 procedure setCaption();
 begin
   Form3.Caption := 'FPS: ' + IntToStr(CURRENTFPS) + ' X: ' + IntToStr(PlayerX)
-    + ' Y: ' + IntToStr(PlayerY) + ' ActualX: ' +
-    IntToStr(PlayerActualX + PlayerX) + ' ActualY: ' +
-    IntToStr(PlayerActualY + PlayerY) + ' Distance: ' +
-    FloatToStr(round(Distance))
+    + ' Y: ' + IntToStr(PlayerY) + ' ActualX: ' + IntToStr
+    (PlayerActualX + PlayerX) + ' ActualY: ' + IntToStr
+    (PlayerActualY + PlayerY) + ' Distance: ' + FloatToStr
+    (round(Distance))
 end;
 
 procedure placeGround();
@@ -169,7 +164,7 @@ end;
 
 procedure TForm3.FormCreate(Sender: TObject);
 var
-  I, X, Y: Integer;
+  I, x, y: Integer;
   T: TResourceStream;
 begin
 
@@ -194,7 +189,8 @@ begin
 
   for I := 1 to Length(gameObjectTextureNames) do begin
     png := TPngImage.Create;
-    T := TResourceStream.Create(hInstance, gameObjectTextureNames[I], RT_RCDATA);
+    T := TResourceStream.Create(hInstance, gameObjectTextureNames[I],
+      RT_RCDATA);
     png.LoadFromStream(T);
     T.Free;
     gameObjectTextures[I] := png;
@@ -207,7 +203,6 @@ begin
     T.Free;
     grassTileImages[I] := jpg;
   end;
-
 
   playerImage := TPngImage.Create;
   selectorImage := TPngImage.Create;
@@ -245,9 +240,9 @@ begin
 
   placeGround;
 
-  for X := 0 to 40 do
-    for Y := 0 to 20 do
-      addGameObject(X, Y, 'brick');
+  for x := 0 to 40 do
+    for y := 0 to 20 do
+      addGameObject(x, y, 'brick');
 
 end;
 
@@ -262,11 +257,12 @@ begin
     backwardKey := True;
   if Key = Word('D') then
     rightKey := True;
-  if (ord(Key) = 27) then begin //checks for "escape" key press
+  if (ord(Key) = 27) then begin // checks for "escape" key press
     INC(paused);
-      if ((paused mod 2) = 0) then
+    if ((paused mod 2) = 0) then
       pauseGame
-      else unpauseGame;
+    else
+      unpauseGame;
   end;
 
 end;
@@ -291,10 +287,10 @@ begin
 end;
 
 procedure setPlayerQuad;
-  begin
-    playerQuadX := Math.Floor(PlayerActualX / Form3.ClientWidth);
-    playerQuadY := Math.Floor(PlayerActualY / Form3.ClientHeight);
-  end;
+begin
+  playerQuadX := Math.Floor(PlayerActualX / Form3.ClientWidth);
+  playerQuadY := Math.Floor(PlayerActualY / Form3.ClientHeight);
+end;
 
 procedure TForm3.gameLoopTimer(Sender: TObject);
 var
@@ -378,16 +374,17 @@ begin
     if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX)
         and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight)
           = playerQuadY)) then begin
-          for R := 1 to Length(gameObjectTypes) do
-            if gameObjectTypes[R] = gameObjects[I].objectType then begin
-              objectIndex :=R;
-            end;
+      for R := 1 to Length(gameObjectTypes) do
+        if gameObjectTypes[R] = gameObjects[I].objectType then begin
+          objectIndex := R;
+        end;
 
 
-           // writeln(objectIndex);
+      // writeln(objectIndex);
 
       Form3.Image1.canvas.Draw(gameObjects[I].x * 32 - playerQuadX * 32 * 40,
-        gameObjects[I].y * 32 - playerQuadY * 32 * 20, gameObjectTextures[objectIndex]);
+        gameObjects[I].y * 32 - playerQuadY * 32 * 20,
+        gameObjectTextures[objectIndex]);
     end;
   end;
 
@@ -410,8 +407,8 @@ begin
     Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32, selectorImage);
   end;
 
-  //for I := 0 to 5 do
-   // Form3.Image1.canvas.Draw(5, (32 * I) + 5, heartImage);       HEART STUFF, DONT NEED IT YET...
+  // for I := 0 to 5 do
+  // Form3.Image1.canvas.Draw(5, (32 * I) + 5, heartImage);       HEART STUFF, DONT NEED IT YET...
 
   setCaption();
 
@@ -422,19 +419,20 @@ end;
 procedure TForm3.Image1Click(Sender: TObject);
 begin
   writeln('Placing!');
-  addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20, 'brick');
+  addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20,
+    'brick');
 end;
 
 procedure TForm3.pauseGame;
 begin
   gameLoop.enabled := False;
   FpsReset.enabled := False;
-  Form3.Image1.canvas.Draw(0,0,pauseScreen); 
+  Form3.Image1.canvas.Draw(0, 0, pauseScreen);
 end;
 
 procedure TForm3.unpauseGame;
 begin
-  if (gameLoop.enabled = False ) or (FpsReset.enabled = False) then begin
+  if (gameLoop.enabled = False) or (FpsReset.enabled = False) then begin
     gameLoop.enabled := True;
     FpsReset.enabled := True;
   end;
