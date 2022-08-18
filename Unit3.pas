@@ -23,6 +23,7 @@ uses
 type
   TGameObject = class(TObject)
     x, y: Integer;
+    objectType: String;
   end;
 
 type
@@ -47,6 +48,7 @@ type
 var
   Form3: TForm3;
   jpg: TJPEGImage;
+  png : TGraphic;
   forwardKey, backwardKey, leftKey, rightKey: Boolean;
   grassTileImages: array [1 .. 6] of TJPEGImage;
   bush, tree1, tree2, tree3, tree4, playerImage, selectorImage,
@@ -55,10 +57,17 @@ var
     CURRENTFPS, FPS, cursorGridX, cursorGridY, playerQuadX,
     playerQuadY: Integer;
   Seed: Integer = 69420;
+  SelectedSlot: Integer = 0;
   Distance: Real;
   gameObjects: array of TGameObject;
 
 const
+  gameObjectTypes: array [1 .. 2] of string = ('brick', 'man_01');
+  gameObjectTextureNames: array [1 .. 2] of string = ('PngImage_19', 'man_01');
+  var
+  gameObjectTextures: array [1 .. 2] of TGraphic;
+
+
   grassTileNames: array [1 .. 6] of string = ('JpgImage_65', 'JpgImage_66',
     'JpgImage_67', 'JpgImage_68', 'JpgImage_69', 'JpgImage_70');
 
@@ -84,7 +93,7 @@ begin
     result := nil;
 end;
 
-procedure addGameObject(x, y: Integer);
+procedure addGameObject(x, y: Integer; objectType: String);
 var
   newGameObject: TGameObject;
   objectExistsAlready: Boolean;
@@ -104,6 +113,7 @@ begin
     newGameObject := TGameObject.Create;
     newGameObject.x := x;
     newGameObject.y := y;
+    newGameObject.objectType := objectType;
     SetLength(gameObjects, Length(gameObjects) + 1);
     gameObjects[ High(gameObjects)] := newGameObject;
   end;
@@ -143,7 +153,7 @@ end;
 
 procedure TForm3.FormCreate(Sender: TObject);
 var
-  I: Integer;
+  I, X, Y: Integer;
   T: TResourceStream;
 begin
 
@@ -163,6 +173,23 @@ begin
 
   PlayerActualX := 0;
   PlayerActualY := 0;
+
+  for I := 1 to Length(gameObjectTextureNames) do begin
+    png := TPngImage.Create;
+    T := TResourceStream.Create(hInstance, gameObjectTextureNames[I], RT_RCDATA);
+    png.LoadFromStream(T);
+    T.Free;
+    gameObjectTextures[I] := png;
+  end;
+
+  for I := 1 to Length(grassTileNames) do begin
+    jpg := TJPEGImage.Create;
+    T := TResourceStream.Create(hInstance, grassTileNames[I], RT_RCDATA);
+    jpg.LoadFromStream(T);
+    T.Free;
+    grassTileImages[I] := jpg;
+  end;
+
 
   playerImage := TPngImage.Create;
   selectorImage := TPngImage.Create;
@@ -194,6 +221,10 @@ begin
   end;
 
   placeGround;
+
+  for X := 0 to 40 do
+    for Y := 0 to 20 do
+      addGameObject(X, Y, 'brick');
 
 end;
 
@@ -227,49 +258,56 @@ procedure TForm3.FpsResetTimer(Sender: TObject);
 begin
   CURRENTFPS := FPS;
   setCaption;
-  if FPS >= 60 then begin
-    FPS := 0;
-  end;
-
+  FPS := 0;
 end;
+
+procedure setPlayerQuad;
+  begin
+    playerQuadX := Math.Floor(PlayerActualX / Form3.ClientWidth);
+    playerQuadY := Math.Floor(PlayerActualY / Form3.ClientHeight);
+  end;
 
 procedure TForm3.gameLoopTimer(Sender: TObject);
 var
   pt: tPoint;
 var
   frame: TGraphic;
-  I: Integer;
+  I, R, speed, objectIndex: Integer;
 begin
 
+  speed := 4;
+
   if forwardKey then begin
-    PlayerY := PlayerY - 10+round(10* CURRENTFPS / 60);
+    PlayerY := PlayerY - speed;
 
     if rightKey then begin
-      PlayerX := PlayerX - 4+round(4* CURRENTFPS / 60);
-      PlayerY := PlayerY + 4+round(4* CURRENTFPS / 60);
+      PlayerX := PlayerX - round(speed / 2);
+      PlayerY := PlayerY + round(speed / 2);
     end
     else if leftKey then begin
-      PlayerX := PlayerX + 4+round(4* CURRENTFPS / 60);
-      PlayerY := PlayerY + 4+round(4* CURRENTFPS / 60);
+      PlayerX := PlayerX + round(speed / 2);
+      PlayerY := PlayerY + round(speed / 2);
     end;
 
   end;
   if backwardKey then begin
-    PlayerY := PlayerY + 10+round(10* CURRENTFPS / 60);
+    PlayerY := PlayerY + speed;
 
     if rightKey then begin
-      PlayerX := PlayerX - 4+round(4* CURRENTFPS / 60);
-      PlayerY := PlayerY - 4+round(4* CURRENTFPS / 60);
+      PlayerX := PlayerX - round(speed / 2);
+      PlayerY := PlayerY - round(speed / 2);
     end
     else if leftKey then begin
-      PlayerX := PlayerX + 4+round(4* CURRENTFPS / 60);
-      PlayerY := PlayerY - 4+round(4* CURRENTFPS / 60);
+      PlayerX := PlayerX + round(speed / 2);
+      PlayerY := PlayerY - round(speed / 2);
     end;
 
   end;
   if leftKey then begin
-    PlayerX := PlayerX - 10+round(10* CURRENTFPS / 60);
-    PlayerX := PlayerX + 10+round(10* CURRENTFPS / 60);
+    PlayerX := PlayerX - speed;
+  end;
+  if rightKey then begin
+    PlayerX := PlayerX + speed;
   end;
 
   // Player Enter Top of screen
@@ -277,6 +315,7 @@ begin
     PlayerActualY := PlayerActualY - Form3.ClientHeight;
     PlayerY := Form3.ClientHeight - 32;
     writeln('Enter Top');
+    setPlayerQuad;
   end
 
   // Player Enter Bottom of screen
@@ -284,6 +323,7 @@ begin
     PlayerActualY := PlayerActualY + Form3.ClientHeight;
     PlayerY := -32;
     writeln('Enter Bottom');
+    setPlayerQuad;
   end
 
   // Player Enter LeftHand side of screen
@@ -291,6 +331,7 @@ begin
     PlayerX := Form3.ClientWidth - 32;
     PlayerActualX := PlayerActualX - Form3.ClientWidth;
     writeln('Enter Left');
+    setPlayerQuad;
   end
 
   // Player Enter RightHand side of screen
@@ -298,22 +339,27 @@ begin
     PlayerX := -32;
     PlayerActualX := PlayerActualX + Form3.ClientWidth;
     writeln('Enter Right');
+    setPlayerQuad;
   end;
 
   Form3.Image1.canvas.CopyRect(Form3.Image1.canvas.ClipRect,
     Form3.LevelImage.canvas, Form3.LevelImage.canvas.ClipRect);
 
   for I := 0 to Length(gameObjects) - 1 do begin
-    playerQuadX := Math.Floor(PlayerActualX / Form3.ClientWidth);
-    playerQuadY := Math.Floor(PlayerActualY / Form3.ClientHeight);
-
     if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX)
         and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight)
           = playerQuadY)) then begin
-      Form3.Image1.canvas.Draw((gameObjects[I].x) * 32 - playerQuadX * 32 * 40,
-        (gameObjects[I].y) * 32 - playerQuadY * 32 * 20, playerImage);
-    end;
+          for R := 1 to Length(gameObjectTypes) do
+            if gameObjectTypes[R] = gameObjects[I].objectType then begin
+              objectIndex :=R;
+            end;
 
+
+           // writeln(objectIndex);
+
+      Form3.Image1.canvas.Draw(gameObjects[I].x * 32 - playerQuadX * 32 * 40,
+        gameObjects[I].y * 32 - playerQuadY * 32 * 20, gameObjectTextures[objectIndex]);
+    end;
   end;
 
   Form3.Image1.canvas.Draw(PlayerX + 16, PlayerY + 16, playerImage);
@@ -335,8 +381,8 @@ begin
     Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32, selectorImage);
   end;
 
-  for I := 0 to 5 do
-    Form3.Image1.canvas.Draw(5, (32 * I) + 5, heartImage);
+  //for I := 0 to 5 do
+   // Form3.Image1.canvas.Draw(5, (32 * I) + 5, heartImage);       HEART STUFF, DONT NEED IT YET...
 
   setCaption();
 
@@ -347,7 +393,7 @@ end;
 procedure TForm3.Image1Click(Sender: TObject);
 begin
   writeln('Placing!');
-  addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
+  addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20, 'brick');
 end;
 
 end.
