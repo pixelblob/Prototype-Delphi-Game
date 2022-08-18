@@ -17,8 +17,8 @@ uses
   jpeg,
   Math,
   Sockets,
-  superobject,
-  DateUtils, StdCtrls;
+  DateUtils,
+  StdCtrls;
 
 type
   TGameObject = class(TObject)
@@ -39,6 +39,8 @@ type
     procedure gameLoopTimer(Sender: TObject);
     procedure FpsResetTimer(Sender: TObject);
     procedure Image1Click(Sender: TObject);
+    procedure pauseGame();
+    procedure unpauseGame();
   private
     { Private declarations }
   public
@@ -50,6 +52,7 @@ var
   jpg: TJPEGImage;
   png : TGraphic;
   forwardKey, backwardKey, leftKey, rightKey: Boolean;
+
   grassTileImages: array [1 .. 6] of TJPEGImage;
   bush, tree1, tree2, tree3, tree4, playerImage, selectorImage,
     nopeSelectorImage, heartImage: TGraphic;
@@ -58,7 +61,21 @@ var
     playerQuadY: Integer;
   Seed: Integer = 69420;
   SelectedSlot: Integer = 0;
+
+
+  bush, tree1, tree2, tree3, tree4, playerImage,
+  selectorImage,nopeSelectorImage, heartImage, pauseScreen: TGraphic;
+
+    PlayerX, PlayerActualX, PlayerY, PlayerActualY,
+    oldWindowX, oldWindowY, playerQuadX, playerQuadY,
+    CURRENTFPS, FPS, cursorGridX, cursorGridY, paused: Integer;
+
+
   Distance: Real;
+  Seed: Integer = 69420;
+
+
+  grassTileImages: array [1 .. 6] of TJPEGImage;
   gameObjects: array of TGameObject;
 
 const
@@ -83,13 +100,13 @@ var
 begin
   occupied := False;
   for I := 0 to Length(gameObjects) - 1 do begin
-    if ((gameObjects[I].x = x) and (gameObjects[I].y = y)) then begin
+    if ((gameObjects[I].x = x) and (gameObjects[I].y = y)) then BEGIN
       result := gameObjects[I];
       occupied := True;
-    end;
-
+    END;
   end;
-  if occupied = False then
+
+  if (occupied = False) then
     result := nil;
 end;
 
@@ -102,11 +119,10 @@ begin
   objectExistsAlready := False;
 
   for I := 0 to Length(gameObjects) - 1 do begin
-    if ((gameObjects[I].x = x) and (gameObjects[I].y = y)) then begin
+    if ((gameObjects[I].x = x) and (gameObjects[I].y = y)) then BEGIN
       objectExistsAlready := True;
       writeln('THAT LOCATION IS OCCUPIED');
-    end;
-
+    END;
   end;
 
   if objectExistsAlready <> True then begin
@@ -122,11 +138,11 @@ end;
 
 procedure setCaption();
 begin
-  Form3.Caption := 'FPS: ' + inttostr(CURRENTFPS) + ' X: ' + inttostr(PlayerX)
-    + ' Y: ' + inttostr(PlayerY) + ' ActualX: ' + inttostr
-    (PlayerActualX + PlayerX) + ' ActualY: ' + inttostr
-    (PlayerActualY + PlayerY) + ' Distance: ' + floattostr
-    (round(Distance))
+  Form3.Caption := 'FPS: ' + IntToStr(CURRENTFPS) + ' X: ' + IntToStr(PlayerX)
+    + ' Y: ' + IntToStr(PlayerY) + ' ActualX: ' +
+    IntToStr(PlayerActualX + PlayerX) + ' ActualY: ' +
+    IntToStr(PlayerActualY + PlayerY) + ' Distance: ' +
+    FloatToStr(round(Distance))
 end;
 
 procedure placeGround();
@@ -156,6 +172,8 @@ var
   I, X, Y: Integer;
   T: TResourceStream;
 begin
+
+  paused := 1;
 
   AllocConsole;
 
@@ -195,9 +213,14 @@ begin
   selectorImage := TPngImage.Create;
   nopeSelectorImage := TPngImage.Create;
   heartImage := TPngImage.Create;
+  pauseScreen := TPngImage.Create;
 
   T := TResourceStream.Create(hInstance, 'man_01', RT_RCDATA);
   playerImage.LoadFromStream(T);
+  T.Free;
+
+  T := TResourceStream.Create(hInstance, 'pause_screen', RT_RCDATA);
+  pauseScreen.LoadFromStream(T);
   T.Free;
 
   T := TResourceStream.Create(hInstance, 'PngImage_1', RT_RCDATA);
@@ -239,6 +262,12 @@ begin
     backwardKey := True;
   if Key = Word('D') then
     rightKey := True;
+  if (ord(Key) = 27) then begin //checks for "escape" key press
+    INC(paused);
+      if ((paused mod 2) = 0) then
+      pauseGame
+      else unpauseGame;
+  end;
 
 end;
 
@@ -394,6 +423,22 @@ procedure TForm3.Image1Click(Sender: TObject);
 begin
   writeln('Placing!');
   addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20, 'brick');
+end;
+
+procedure TForm3.pauseGame;
+begin
+  gameLoop.enabled := False;
+  FpsReset.enabled := False;
+  Form3.Image1.canvas.Draw(0,0,pauseScreen); 
+end;
+
+procedure TForm3.unpauseGame;
+begin
+  if (gameLoop.enabled = False ) or (FpsReset.enabled = False) then begin
+    gameLoop.enabled := True;
+    FpsReset.enabled := True;
+  end;
+
 end;
 
 end.
