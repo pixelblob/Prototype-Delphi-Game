@@ -662,6 +662,18 @@
 				<ResourceType>RCData</ResourceType>
 				<ResourceId>PngImage_18</ResourceId>
 			</RcItem>
+			<RcItem Include="images\brick.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_19</ResourceId>
+			</RcItem>
+			<RcItem Include="E:\Downloads\pause_screen.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>PngImage_20</ResourceId>
+			</RcItem>
+			<RcItem Include="images\pause_screen.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>pause_screen</ResourceId>
+			</RcItem>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
