@@ -283,9 +283,9 @@ begin
 
   placeGround;
 
-  for x := 0 to 40 do
-    for y := 0 to 20 do
-      addGameObject(x, y, 'brick');
+  //for x := 0 to 40 do
+   // for y := 0 to 20 do
+    //  addGameObject(x, y, 'brick');
 
   updateLevelCache;
 
