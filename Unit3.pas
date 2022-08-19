@@ -521,8 +521,8 @@ begin
       // writeln((ABS((playerY+32) - gameObjects[I].Y*32)));
       // if ((ABS((playerX) - gameObjects[I].x*32) <= 32) and (ABS((playerY) - gameObjects[I].Y*32) <= 16)) then begin
       // writeln(ABS(playerX - gameObjects[I].x*32));
-      if ((ABS(PlayerX + 16 - gameObjects[I].x * 32) <= 20) and
-          (ABS(PlayerY + 16 - gameObjects[I].y * 32) <= 20)) then begin
+      if ((ABS(PlayerX+ (playerQuadX * 40 * 32) + 16 - gameObjects[I].x * 32) <= 20) and
+          (ABS(PlayerY+ (playerQuadY * 20 * 32) + 16 - gameObjects[I].y * 32) <= 20)) then begin
 
         PlayerX := PrevX;
         PlayerY := PrevY;

@@ -29,15 +29,15 @@ object Form3: TForm3
     OnMouseUp = Image1MouseUp
   end
   object LevelImage: TImage
-    Left = 368
-    Top = 112
+    Left = 0
+    Top = 136
     Width = 105
     Height = 105
     Visible = False
   end
   object cachedLevel: TImage
-    Left = 320
-    Top = 344
+    Left = 0
+    Top = 272
     Width = 105
     Height = 105
     Visible = False
@@ -45,12 +45,12 @@ object Form3: TForm3
   object gameLoop: TTimer
     Interval = 1
     OnTimer = gameLoopTimer
-    Left = 600
-    Top = 8
+    Left = 184
+    Top = 24
   end
   object FpsReset: TTimer
     OnTimer = FpsResetTimer
-    Left = 1024
-    Top = 384
+    Left = 184
+    Top = 168
   end
 end
