@@ -25,7 +25,8 @@ object Form3: TForm3
     Top = 0
     Width = 105
     Height = 105
-    OnClick = Image1Click
+    OnMouseDown = Image1MouseDown
+    OnMouseUp = Image1MouseUp
   end
   object LevelImage: TImage
     Left = 368

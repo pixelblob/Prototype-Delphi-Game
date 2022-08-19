@@ -39,9 +39,12 @@ type
     procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure gameLoopTimer(Sender: TObject);
     procedure FpsResetTimer(Sender: TObject);
-    procedure Image1Click(Sender: TObject);
     procedure pauseGame();
     procedure unpauseGame();
+    procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; x, y: Integer);
+    procedure Image1MouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; x, y: Integer);
   private
     { Private declarations }
   public
@@ -52,7 +55,8 @@ var
   Form3: TForm3;
   jpg: TJPEGImage;
   png: TGraphic;
-  forwardKey, backwardKey, leftKey, rightKey: Boolean;
+  forwardKey, backwardKey, leftKey, rightKey, isMouseDown,
+    isLeftMouseDown: Boolean;
 
   grassTileImages: array [1 .. 6] of TJPEGImage;
   SelectedSlot: Integer = 0;
@@ -64,7 +68,7 @@ var
     playerQuadX, playerQuadY, CURRENTFPS, FPS, cursorGridX, cursorGridY,
     paused: Integer;
 
-    objectBitmapCache: TBitmap;
+  objectBitmapCache: TBitmap;
 
   Distance: Real;
   Seed: Integer = 69420;
@@ -95,9 +99,10 @@ var
   I, R, objectIndex: Integer;
 begin
 
-Form3.cachedLevel.canvas.pen.color:=clwhite;
-      Form3.cachedLevel.canvas.brush.color:=clwhite;
-      Form3.cachedLevel.canvas.rectangle(0,0,form3.cachedLevel.width, form3.cachedLevel.height);
+  Form3.cachedLevel.canvas.pen.color := clwhite;
+  Form3.cachedLevel.canvas.brush.color := clwhite;
+  Form3.cachedLevel.canvas.rectangle(0, 0, Form3.cachedLevel.width,
+    Form3.cachedLevel.height);
 
   for I := 0 to Length(gameObjects) - 1 do begin
     if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX)
@@ -115,14 +120,15 @@ Form3.cachedLevel.canvas.pen.color:=clwhite;
     end;
   end;
 
-  objectBitmapCache:= TBitmap.create;
-    objectBitmapCache.Canvas.Brush.Handle := 0;
-    objectBitmapCache.Transparent := True;
+  objectBitmapCache := TBitmap.create;
+  objectBitmapCache.canvas.brush.Handle := 0;
+  objectBitmapCache.Transparent := True;
 
-    objectBitmapCache.Width := Form3.Width;
-    objectBitmapCache.Height := Form3.Height;
+  objectBitmapCache.width := Form3.width;
+  objectBitmapCache.height := Form3.height;
 
-     objectBitmapCache.Canvas.CopyRect(objectBitmapCache.Canvas.ClipRect, form3.cachedLevel.Canvas, form3.cachedLevel.Canvas.ClipRect);
+  objectBitmapCache.canvas.CopyRect(objectBitmapCache.canvas.ClipRect,
+    Form3.cachedLevel.canvas, Form3.cachedLevel.canvas.ClipRect);
 
   writeln('UPDATED LEVEL CACHE');
 end;
@@ -145,6 +151,28 @@ begin
     result := nil;
 end;
 
+procedure removeGameObject(x, y: Integer);
+var
+  ALength: Cardinal;
+  I: Integer;
+  Iv: Cardinal;
+begin
+
+  for I := 0 to Length(gameObjects) - 1 do begin
+    if ((gameObjects[I].x = x) and (gameObjects[I].y = y)) then BEGIN
+
+      ALength := Length(gameObjects);
+      Assert(ALength > 0);
+      Assert(I < ALength);
+      for Iv := I + 1 to ALength - 1 do
+        gameObjects[Iv - 1] := gameObjects[Iv];
+      SetLength(gameObjects, ALength - 1);
+
+    END;
+  end;
+
+end;
+
 procedure addGameObject(x, y: Integer; objectType: String);
 var
   newGameObject: TGameObject;
@@ -161,7 +189,7 @@ begin
   end;
 
   if objectExistsAlready <> True then begin
-    newGameObject := TGameObject.Create;
+    newGameObject := TGameObject.create;
     newGameObject.x := x;
     newGameObject.y := y;
     newGameObject.objectType := objectType;
@@ -185,17 +213,17 @@ var
   x, y: Integer;
 begin
 
-  Form3.Image1.Picture.Bitmap.Width := Form3.Image1.Width;
-  Form3.Image1.Picture.Bitmap.Height := Form3.Image1.Height;
+  Form3.Image1.Picture.Bitmap.width := Form3.Image1.width;
+  Form3.Image1.Picture.Bitmap.height := Form3.Image1.height;
 
-  Form3.LevelImage.Picture.Bitmap.Width := Form3.Image1.Width;
-  Form3.LevelImage.Picture.Bitmap.Height := Form3.Image1.Height;
+  Form3.LevelImage.Picture.Bitmap.width := Form3.Image1.width;
+  Form3.LevelImage.Picture.Bitmap.height := Form3.Image1.height;
 
   randseed := Math.Floor((PlayerActualX + PlayerX + 32) / Form3.ClientWidth)
     + Math.Floor((PlayerActualY + PlayerY + 32) / Form3.ClientHeight) + Seed;
 
-  for x := 0 to round(Form3.Image1.Width / 32) do begin
-    for y := 0 to round(Form3.Image1.Height / 32) do
+  for x := 0 to round(Form3.Image1.width / 32) do begin
+    for y := 0 to round(Form3.Image1.height / 32) do
       Form3.LevelImage.canvas.Draw(x * 32, y * 32,
         grassTileImages[RandomRange(1, Length(grassTileImages))]);
   end;
@@ -215,14 +243,14 @@ begin
   oldWindowX := Form3.Left;
   oldWindowY := Form3.Top;
 
-  Form3.Image1.Width := Form3.Width;
-  Form3.Image1.Height := Form3.Height;
+  Form3.Image1.width := Form3.width;
+  Form3.Image1.height := Form3.height;
 
-  Form3.LevelImage.Width := Form3.Width;
-  Form3.LevelImage.Height := Form3.Height;
+  Form3.LevelImage.width := Form3.width;
+  Form3.LevelImage.height := Form3.height;
 
-  Form3.cachedLevel.Width := Form3.Width;
-  Form3.cachedLevel.Height := Form3.Height;
+  Form3.cachedLevel.width := Form3.width;
+  Form3.cachedLevel.height := Form3.height;
 
   PlayerX := 0;
   PlayerY := 0;
@@ -231,8 +259,8 @@ begin
   PlayerActualY := 0;
 
   for I := 1 to Length(gameObjectTextureNames) do begin
-    png := TPngImage.Create;
-    T := TResourceStream.Create(hInstance, gameObjectTextureNames[I],
+    png := TPngImage.create;
+    T := TResourceStream.create(hInstance, gameObjectTextureNames[I],
       RT_RCDATA);
     png.LoadFromStream(T);
     T.Free;
@@ -240,42 +268,42 @@ begin
   end;
 
   for I := 1 to Length(grassTileNames) do begin
-    jpg := TJPEGImage.Create;
-    T := TResourceStream.Create(hInstance, grassTileNames[I], RT_RCDATA);
+    jpg := TJPEGImage.create;
+    T := TResourceStream.create(hInstance, grassTileNames[I], RT_RCDATA);
     jpg.LoadFromStream(T);
     T.Free;
     grassTileImages[I] := jpg;
   end;
 
-  playerImage := TPngImage.Create;
-  selectorImage := TPngImage.Create;
-  nopeSelectorImage := TPngImage.Create;
-  heartImage := TPngImage.Create;
-  pauseScreen := TPngImage.Create;
+  playerImage := TPngImage.create;
+  selectorImage := TPngImage.create;
+  nopeSelectorImage := TPngImage.create;
+  heartImage := TPngImage.create;
+  pauseScreen := TPngImage.create;
 
-  T := TResourceStream.Create(hInstance, 'man_01', RT_RCDATA);
+  T := TResourceStream.create(hInstance, 'man_01', RT_RCDATA);
   playerImage.LoadFromStream(T);
   T.Free;
 
-  T := TResourceStream.Create(hInstance, 'pause_screen', RT_RCDATA);
+  T := TResourceStream.create(hInstance, 'pause_screen', RT_RCDATA);
   pauseScreen.LoadFromStream(T);
   T.Free;
 
-  T := TResourceStream.Create(hInstance, 'PngImage_1', RT_RCDATA);
+  T := TResourceStream.create(hInstance, 'PngImage_1', RT_RCDATA);
   selectorImage.LoadFromStream(T);
   T.Free;
 
-  T := TResourceStream.Create(hInstance, 'PngImage_18', RT_RCDATA);
+  T := TResourceStream.create(hInstance, 'PngImage_18', RT_RCDATA);
   nopeSelectorImage.LoadFromStream(T);
   T.Free;
 
-  T := TResourceStream.Create(hInstance, 'PngImage_17', RT_RCDATA);
+  T := TResourceStream.create(hInstance, 'PngImage_17', RT_RCDATA);
   heartImage.LoadFromStream(T);
   T.Free;
 
   for I := 1 to Length(grassTileNames) do begin
-    jpg := TJPEGImage.Create;
-    T := TResourceStream.Create(hInstance, grassTileNames[I], RT_RCDATA);
+    jpg := TJPEGImage.create;
+    T := TResourceStream.create(hInstance, grassTileNames[I], RT_RCDATA);
     jpg.LoadFromStream(T);
     T.Free;
     grassTileImages[I] := jpg;
@@ -283,9 +311,20 @@ begin
 
   placeGround;
 
-  //for x := 0 to 40 do
-   // for y := 0 to 20 do
-    //  addGameObject(x, y, 'brick');
+  for x := 0 + (5) to 4 + (5) do begin
+    for y := 0 + (5) to 4 + (5) do begin
+      if ((x = 0 + (5)) or (x = 4 + (5))) then
+        addGameObject(x, y, 'brick');
+
+      if ((y = 0 + (5)) or (y = 4 + (5))) then begin
+        if ((y = 0 + (5)) and (x = 2 + (5))) then
+        else
+          addGameObject(x, y, 'brick');
+
+      end;
+
+    end;
+  end;
 
   updateLevelCache;
 
@@ -347,10 +386,14 @@ var
   frame: TGraphic;
   I, R, speed, objectIndex: Integer;
   Bitmap: TBitmap;
-  tempcanvas : TCanvas;
-  WindowHandle : HWND;
-  ScreenDC,bufferDC : HDC;
+  tempcanvas: TCanvas;
+  WindowHandle: HWND;
+  ScreenDC, bufferDC: HDC;
+  PrevX, PrevY: Integer;
 begin
+
+  PrevX := PlayerX;
+  PrevY := PlayerY;
 
   speed := 4;
 
@@ -419,12 +462,11 @@ begin
     setPlayerQuad;
   end;
 
-  //Draws the grass
+  // Draws the grass
   Form3.Image1.canvas.CopyRect(Form3.Image1.canvas.ClipRect,
     Form3.LevelImage.canvas, Form3.LevelImage.canvas.ClipRect);
 
-
-    Form3.Image1.canvas.Draw(0, 0, objectBitmapCache);
+  Form3.Image1.canvas.Draw(0, 0, objectBitmapCache);
 
   Form3.Image1.canvas.Draw(PlayerX + 16, PlayerY + 16, playerImage);
 
@@ -432,6 +474,28 @@ begin
 
   pt := Mouse.CursorPos;
   pt := ScreenToClient(pt);
+
+  if (isMouseDown = True) then begin
+    if ((cursorGridX <> round((pt.x - 16) / 32)) or
+        (cursorGridY <> round((pt.y - 16) / 32))) then begin
+      if isLeftMouseDown then begin
+        writeln('DRAG-PLACE');
+        addGameObject(cursorGridX + playerQuadX * 40,
+          cursorGridY + playerQuadY * 20, 'brick');
+        addGameObject(round((pt.x - 16) / 32) + playerQuadX * 40,
+          round((pt.y - 16) / 32) + playerQuadY * 20, 'brick');
+        updateLevelCache;
+      end
+      else begin
+        writeln('DRAG-DELETE');
+        removeGameObject(cursorGridX + playerQuadX * 40,
+          cursorGridY + playerQuadY * 20);
+        removeGameObject(round((pt.x - 16) / 32) + playerQuadX * 40,
+          round((pt.y - 16) / 32) + playerQuadY * 20);
+        updateLevelCache;
+      end;
+    end;
+  end;
 
   cursorGridX := round((pt.x - 16) / 32);
   cursorGridY := round((pt.y - 16) / 32);
@@ -445,6 +509,31 @@ begin
     Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32, selectorImage);
   end;
 
+
+
+  // COLLISON STUFFS
+
+  for I := 0 to Length(gameObjects) - 1 do begin
+    if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX)
+        and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight)
+          = playerQuadY)) then begin
+
+      // writeln((ABS((playerY+32) - gameObjects[I].Y*32)));
+      // if ((ABS((playerX) - gameObjects[I].x*32) <= 32) and (ABS((playerY) - gameObjects[I].Y*32) <= 16)) then begin
+      // writeln(ABS(playerX - gameObjects[I].x*32));
+      if ((ABS(PlayerX + 16 - gameObjects[I].x * 32) <= 20) and
+          (ABS(PlayerY + 16 - gameObjects[I].y * 32) <= 20)) then begin
+
+        PlayerX := PrevX;
+        PlayerY := PrevY;
+
+      end;
+
+    end;
+  end;
+
+
+
   // for I := 0 to 5 do
   // Form3.Image1.canvas.Draw(5, (32 * I) + 5, heartImage);       HEART STUFF, DONT NEED IT YET...
 
@@ -454,12 +543,41 @@ begin
 
 end;
 
-procedure TForm3.Image1Click(Sender: TObject);
+procedure TForm3.Image1MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; x, y: Integer);
 begin
-  writeln('Placing!');
-  addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20,
-    'brick');
+  isMouseDown := True;
+
+  if Button = mbLeft then
+    isLeftMouseDown := True
+  else if Button = mbRight then
+    isLeftMouseDown := False;
+
+  if isLeftMouseDown then begin
+    writeln('PLACE');
+    addGameObject(cursorGridX + playerQuadX * 40,
+      cursorGridY + playerQuadY * 20, 'brick');
     updateLevelCache;
+  end
+  else begin
+    writeln('DELETE');
+    removeGameObject(cursorGridX + playerQuadX * 40,
+      cursorGridY + playerQuadY * 20);
+    updateLevelCache;
+  end;
+
+end;
+
+procedure TForm3.Image1MouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; x, y: Integer);
+begin
+  isMouseDown := False;
+
+  if Button = mbLeft then
+    isLeftMouseDown := False
+  else if Button = mbRight then
+    isLeftMouseDown := False;
+
 end;
 
 procedure TForm3.pauseGame;
