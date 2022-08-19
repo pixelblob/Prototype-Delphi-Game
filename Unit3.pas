@@ -64,6 +64,8 @@ var
     playerQuadX, playerQuadY, CURRENTFPS, FPS, cursorGridX, cursorGridY,
     paused: Integer;
 
+    objectBitmapCache: TBitmap;
+
   Distance: Real;
   Seed: Integer = 69420;
   gameObjects: array of TGameObject;
@@ -92,6 +94,11 @@ procedure updateLevelCache;
 var
   I, R, objectIndex: Integer;
 begin
+
+Form3.cachedLevel.canvas.pen.color:=clwhite;
+      Form3.cachedLevel.canvas.brush.color:=clwhite;
+      Form3.cachedLevel.canvas.rectangle(0,0,form3.cachedLevel.width, form3.cachedLevel.height);
+
   for I := 0 to Length(gameObjects) - 1 do begin
     if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX)
         and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight)
@@ -101,15 +108,22 @@ begin
           objectIndex := R;
         end;
 
-
-      // writeln(objectIndex);
-
       Form3.cachedLevel.canvas.Draw
         (gameObjects[I].x * 32 - playerQuadX * 32 * 40,
         gameObjects[I].y * 32 - playerQuadY * 32 * 20,
         gameObjectTextures[objectIndex]);
     end;
   end;
+
+  objectBitmapCache:= TBitmap.create;
+    objectBitmapCache.Canvas.Brush.Handle := 0;
+    objectBitmapCache.Transparent := True;
+
+    objectBitmapCache.Width := Form3.Width;
+    objectBitmapCache.Height := Form3.Height;
+
+     objectBitmapCache.Canvas.CopyRect(objectBitmapCache.Canvas.ClipRect, form3.cachedLevel.Canvas, form3.cachedLevel.Canvas.ClipRect);
+
   writeln('UPDATED LEVEL CACHE');
 end;
 
@@ -269,9 +283,9 @@ begin
 
   placeGround;
 
-  //for x := 0 to 40 do
-  //  for y := 0 to 20 do
-   //   addGameObject(x, y, 'brick');
+  for x := 0 to 40 do
+    for y := 0 to 20 do
+      addGameObject(x, y, 'brick');
 
   updateLevelCache;
 
@@ -332,7 +346,7 @@ var
 var
   frame: TGraphic;
   I, R, speed, objectIndex: Integer;
-  Bitmap: TPngImage;
+  Bitmap: TBitmap;
   tempcanvas : TCanvas;
   WindowHandle : HWND;
   ScreenDC,bufferDC : HDC;
@@ -410,7 +424,7 @@ begin
     Form3.LevelImage.canvas, Form3.LevelImage.canvas.ClipRect);
 
 
-    //Form3.Image1.canvas.Draw(0, 0, cachedLevel.);
+    Form3.Image1.canvas.Draw(0, 0, objectBitmapCache);
 
   Form3.Image1.canvas.Draw(PlayerX + 16, PlayerY + 16, playerImage);
 

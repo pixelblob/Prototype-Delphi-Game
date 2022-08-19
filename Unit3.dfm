@@ -21,8 +21,8 @@ object Form3: TForm3
   PixelsPerInch = 96
   TextHeight = 13
   object Image1: TImage
-    Left = 48
-    Top = 64
+    Left = 0
+    Top = 0
     Width = 105
     Height = 105
     OnClick = Image1Click
