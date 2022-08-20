@@ -47,6 +47,7 @@ object Form3: TForm3
     Top = 408
     Width = 105
     Height = 105
+    Visible = False
   end
   object gameLoop: TTimer
     Interval = 1

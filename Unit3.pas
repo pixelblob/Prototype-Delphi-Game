@@ -18,12 +18,12 @@ uses
   Math,
   Sockets,
   DateUtils,
-  StdCtrls;
+  StdCtrls,
+  gameObjectManagement;
 
 type
-  TGameObject = class(TObject)
-    x, y: Integer;
-    objectType: String;
+  TBerryBush = class(TGameObject)
+    growthStage: Integer;
   end;
 
 type
@@ -50,6 +50,7 @@ type
     { Private declarations }
   public
     { Public declarations }
+    gameObjects: array of TGameObject;
   end;
 
 var
@@ -63,23 +64,46 @@ var
   SelectedSlot: Integer = 0;
 
   bush, tree1, tree2, tree3, tree4, playerImage, darkImage, selectorImage,
-    nopeSelectorImage, heartImage, pauseScreen: TGraphic;
+    nopeSelectorImage, heartImage, toolbarImage, pauseScreen: TGraphic;
 
   PlayerX, PlayerActualX, PlayerY, PlayerActualY, oldWindowX, oldWindowY,
     playerQuadX, playerQuadY, CURRENTFPS, FPS, cursorGridX, cursorGridY,
     paused: Integer;
 
-  objectBitmapCache, lightBitmapCache: TBitmap;
+  objectBitmapCache: TBitmap;
+
+  lightBitmapCache: TPngImage;
 
   Distance: Real;
   Seed: Integer = 69420;
   gameObjects: array of TGameObject;
+  berryBushObjects: array of TBerryBush;
+  generatedQuadrents: array of Integer;
 
 const
-  gameObjectTypes: array [1 .. 2] of string = ('brick', 'man_01');
-  gameObjectTextureNames: array [1 .. 2] of string = ('PngImage_19', 'man_01');
+  gameTextureNames: array [1 .. 8] of string = ('missing', 'selectedSlot',
+    'Toolbar', 'pause_screen', 'man_01', 'PngImage_1', 'PngImage_18',
+    'PngImage_17');
 
 var
+  gameTextures: array [1 .. 8] of TGraphic;
+  growthStageTextureNames: array [1 .. 4] of string = (
+    'empty_berry_bush',
+    '1_third_berry_bush',
+    '2_thirds_berry_bush',
+    'full_berry_bush'
+  );
+  gameObjectTypes: array [1 .. 2] of string = (
+    'brick',
+    'man_01'
+  );
+  gameObjectTextureNames: array [1 .. 2] of string = (
+    'PngImage_19',
+    'man_01'
+  );
+
+var
+  growthStageTextures: array [1 .. 4] of TGraphic;
   gameObjectTextures: array [1 .. 2] of TGraphic;
 
   grassTileNames: array [1 .. 6] of string = (
@@ -94,6 +118,21 @@ var
 implementation
 
 {$R *.dfm}
+
+function getTexture(texture: String): TGraphic;
+var
+  I: Integer;
+  gameTexture: TGraphic;
+begin
+  // writeln('Requested Texture: '+texture);
+  Result := gameTextures[1];
+  for I := 1 to Length(gameTextureNames) do begin
+    if (gameTextureNames[I] = texture) then begin
+      Result := gameTextures[I];
+      break;
+    end;
+  end;
+end;
 
 procedure updateLevelCache;
 var
@@ -121,6 +160,20 @@ begin
     end;
   end;
 
+  for I := 0 to Length(berryBushObjects) - 1 do begin
+    if ((Math.Floor(berryBushObjects[I].x * 32 / Form3.ClientWidth)
+          = playerQuadX) and (Math.Floor
+          (berryBushObjects[I].y * 32 / Form3.ClientHeight) = playerQuadY))
+      then begin
+
+      Form3.cachedLevel.canvas.Draw
+        (berryBushObjects[I].x * 32 - playerQuadX * 32 * 40,
+        berryBushObjects[I].y * 32 - playerQuadY * 32 * 20,
+        growthStageTextures[berryBushObjects[I].growthStage]
+        );
+    end;
+  end;
+
   objectBitmapCache := TBitmap.create;
   objectBitmapCache.canvas.brush.Handle := 0;
   objectBitmapCache.Transparent := True;
@@ -134,27 +187,9 @@ begin
   writeln('UPDATED LEVEL CACHE');
 end;
 
-function getGameObject(x, y: Integer): TGameObject;
-var
-  I: Integer;
-var
-  occupied: Boolean;
-begin
-  occupied := False;
-  for I := 0 to Length(gameObjects) - 1 do begin
-    if ((gameObjects[I].x = x) and (gameObjects[I].y = y)) then BEGIN
-      result := gameObjects[I];
-      occupied := True;
-    END;
-  end;
-
-  if (occupied = False) then
-    result := nil;
-end;
-
 procedure updateBrightnessCache;
 var
-  I,x, y, R, objectIndex: Integer;
+  I, x, y, R, objectIndex: Integer;
 begin
 
   Form3.brightnessMap.canvas.pen.color := clwhite;
@@ -168,12 +203,12 @@ begin
     end;
   end;
 
-  lightBitmapCache := TBitmap.create;
+  lightBitmapCache := TPngImage.create;
   lightBitmapCache.canvas.brush.Handle := 0;
   lightBitmapCache.Transparent := True;
 
-  lightBitmapCache.width := Form3.width;
-  lightBitmapCache.height := Form3.height;
+  // lightBitmapCache.width := Form3.width;
+  // lightBitmapCache.height := Form3.height;
 
   lightBitmapCache.canvas.CopyRect(lightBitmapCache.canvas.ClipRect,
     Form3.brightnessMap.canvas, Form3.brightnessMap.canvas.ClipRect);
@@ -181,53 +216,22 @@ begin
   writeln('UPDATED LIGHT CACHE');
 end;
 
-
-procedure removeGameObject(x, y: Integer);
+function getBushObject(x, y: Integer): TBerryBush;
 var
-  ALength: Cardinal;
   I: Integer;
-  Iv: Cardinal;
+var
+  occupied: Boolean;
 begin
-
-  for I := 0 to Length(gameObjects) - 1 do begin
-    if ((gameObjects[I].x = x) and (gameObjects[I].y = y)) then BEGIN
-
-      ALength := Length(gameObjects);
-      Assert(ALength > 0);
-      Assert(I < ALength);
-      for Iv := I + 1 to ALength - 1 do
-        gameObjects[Iv - 1] := gameObjects[Iv];
-      SetLength(gameObjects, ALength - 1);
-
+  occupied := False;
+  for I := 0 to Length(berryBushObjects) - 1 do begin
+    if ((berryBushObjects[I].x = x) and (berryBushObjects[I].y = y)) then BEGIN
+      Result := berryBushObjects[I];
+      occupied := True;
     END;
   end;
 
-end;
-
-procedure addGameObject(x, y: Integer; objectType: String);
-var
-  newGameObject: TGameObject;
-  objectExistsAlready: Boolean;
-  I: Integer;
-begin
-  objectExistsAlready := False;
-
-  for I := 0 to Length(gameObjects) - 1 do begin
-    if ((gameObjects[I].x = x) and (gameObjects[I].y = y)) then BEGIN
-      objectExistsAlready := True;
-      writeln('THAT LOCATION IS OCCUPIED');
-    END;
-  end;
-
-  if objectExistsAlready <> True then begin
-    newGameObject := TGameObject.create;
-    newGameObject.x := x;
-    newGameObject.y := y;
-    newGameObject.objectType := objectType;
-    SetLength(gameObjects, Length(gameObjects) + 1);
-    gameObjects[ High(gameObjects)] := newGameObject;
-  end;
-
+  if (occupied = False) then
+    Result := nil;
 end;
 
 procedure setCaption();
@@ -265,6 +269,7 @@ procedure TForm3.FormCreate(Sender: TObject);
 var
   I, x, y: Integer;
   T: TResourceStream;
+  newGameObject: TBerryBush;
 begin
 
   paused := 1;
@@ -301,6 +306,15 @@ begin
     gameObjectTextures[I] := png;
   end;
 
+  for I := 1 to Length(growthStageTextureNames) do begin
+    png := TPngImage.create;
+    T := TResourceStream.create(hInstance, growthStageTextureNames[I],
+      RT_RCDATA);
+    png.LoadFromStream(T);
+    T.Free;
+    growthStageTextures[I] := png;
+  end;
+
   for I := 1 to Length(grassTileNames) do begin
     jpg := TJPEGImage.create;
     T := TResourceStream.create(hInstance, grassTileNames[I], RT_RCDATA);
@@ -309,36 +323,30 @@ begin
     grassTileImages[I] := jpg;
   end;
 
-  playerImage := TPngImage.create;
-  darkImage := TPngImage.create;
-  selectorImage := TPngImage.create;
-  nopeSelectorImage := TPngImage.create;
-  heartImage := TPngImage.create;
-  pauseScreen := TPngImage.create;
+  for I := 1 to Length(gameTextureNames) do begin
+    try
+      gameTextures[I] := TPngImage.create;
+      T := TResourceStream.create(hInstance, gameTextureNames[I], RT_RCDATA);
+      gameTextures[I].LoadFromStream(T);
+      writeln('Loaded Texture: ' + gameTextureNames[I]);
+    except
+      writeln('Failed to load: ' + gameTextureNames[I]);
+      gameTextures[I] := gameTextures[1];
+    end;
+    T.Free;
+  end;
 
-  T := TResourceStream.create(hInstance, 'man_01', RT_RCDATA);
-  playerImage.LoadFromStream(T);
-  T.Free;
+  playerImage := getTexture('man_01');
 
-  T := TResourceStream.create(hInstance, 'dark_square', RT_RCDATA);
-  darkImage.LoadFromStream(T);
-  T.Free;
+  darkImage := getTexture('dark_square');
 
-  T := TResourceStream.create(hInstance, 'pause_screen', RT_RCDATA);
-  pauseScreen.LoadFromStream(T);
-  T.Free;
+  pauseScreen := getTexture('pause_screen');
 
-  T := TResourceStream.create(hInstance, 'PngImage_1', RT_RCDATA);
-  selectorImage.LoadFromStream(T);
-  T.Free;
+  selectorImage := getTexture('PngImage_1');
 
-  T := TResourceStream.create(hInstance, 'PngImage_18', RT_RCDATA);
-  nopeSelectorImage.LoadFromStream(T);
-  T.Free;
+  nopeSelectorImage := getTexture('PngImage_18');
 
-  T := TResourceStream.create(hInstance, 'PngImage_17', RT_RCDATA);
-  heartImage.LoadFromStream(T);
-  T.Free;
+  heartImage := getTexture('PngImage_17');
 
   for I := 1 to Length(grassTileNames) do begin
     jpg := TJPEGImage.create;
@@ -353,7 +361,8 @@ begin
   for x := 0 + (5) to 4 + (5) do begin
     for y := 0 + (5) to 4 + (5) do begin
       if ((x = 0 + (5)) or (x = 4 + (5))) then
-        addGameObject(x, y, 'brick');
+      gameObjectManagement.
+        gameObjectManagement.addGameObject(x, y, 'brick');
 
       if ((y = 0 + (5)) or (y = 4 + (5))) then begin
         if ((y = 0 + (5)) and (x = 2 + (5))) then
@@ -365,8 +374,15 @@ begin
     end;
   end;
 
+  newGameObject := TBerryBush.create;
+  newGameObject.x := 3;
+  newGameObject.y := 4;
+  newGameObject.growthStage := 4;
+  SetLength(berryBushObjects, Length(berryBushObjects) + 1);
+  berryBushObjects[ High(berryBushObjects)] := newGameObject;
+
   updateLevelCache;
-  updateBrightnessCache;
+  // updateBrightnessCache;
 
 end;
 
@@ -413,9 +429,36 @@ begin
 end;
 
 procedure setPlayerQuad;
+var quadGenerated: Boolean;
+var I: Integer;
+ newGameObject : TBerryBush;
 begin
+quadGenerated := False;
   playerQuadX := Math.Floor(PlayerActualX / Form3.ClientWidth);
   playerQuadY := Math.Floor(PlayerActualY / Form3.ClientHeight);
+
+  for I := 1 to Length(generatedQuadrents) do begin
+    if (generatedQuadrents[I] = Math.Floor((PlayerActualX + PlayerX + 32)
+          / Form3.ClientWidth) + Math.Floor((PlayerActualY + PlayerY + 32)
+          / Form3.ClientHeight)) then begin
+
+          quadGenerated := True;
+
+    end;
+  end;
+
+  if quadGenerated = False then begin
+    writeln('GENERATING BERRYS');
+    for I := 1 to Random(10) do begin
+      newGameObject := TBerryBush.create;
+      newGameObject.x := Random(40)+ playerQuadX * 40;
+      newGameObject.y := Random(20)+ playerQuadY * 20;
+      newGameObject.growthStage := Random(4)+1;
+      SetLength(berryBushObjects, Length(berryBushObjects) + 1);
+      berryBushObjects[ High(berryBushObjects)] := newGameObject;
+    end;
+  end;
+
   updateLevelCache;
 end;
 
@@ -512,6 +555,8 @@ begin
 
   placeGround();
 
+  // Form3.Image1.canvas.Draw(0, 0, lightBitmapCache);
+
   pt := Mouse.CursorPos;
   pt := ScreenToClient(pt);
 
@@ -540,7 +585,7 @@ begin
   cursorGridX := round((pt.x - 16) / 32);
   cursorGridY := round((pt.y - 16) / 32);
 
-  if getGameObject(cursorGridX + playerQuadX * 40,
+  if gameObjectManagement.getGameObject(cursorGridX + playerQuadX * 40,
     cursorGridY + playerQuadY * 20) <> nil then begin
     Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32,
       nopeSelectorImage);
@@ -572,10 +617,8 @@ begin
 
     end;
   end;
-
-
-
-
+  Form3.Image1.canvas.Draw(Form3.ClientWidth - 32,
+    round(Form3.ClientHeight / 2) - 5 * 32, getTexture('Toolbar'));
 
   // for I := 0 to 5 do
   // Form3.Image1.canvas.Draw(5, (32 * I) + 5, heartImage);       HEART STUFF, DONT NEED IT YET...
@@ -588,6 +631,8 @@ end;
 
 procedure TForm3.Image1MouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; x, y: Integer);
+var
+  berryBush: TBerryBush;
 begin
   isMouseDown := True;
 
@@ -597,9 +642,18 @@ begin
     isLeftMouseDown := False;
 
   if isLeftMouseDown then begin
-    writeln('PLACE');
-    addGameObject(cursorGridX + playerQuadX * 40,
-      cursorGridY + playerQuadY * 20, 'brick');
+    berryBush := getBushObject(cursorGridX + playerQuadX * 40,
+      cursorGridY + playerQuadY * 20);
+    if berryBush <> nil then begin
+      writeln('HARVEST');
+      if (berryBush.growthStage > 1) then
+        berryBush.growthStage := berryBush.growthStage - 1;
+    end
+    else begin
+      writeln('PLACE');
+      addGameObject(cursorGridX + playerQuadX * 40,
+        cursorGridY + playerQuadY * 20, 'brick');
+    end;
     updateLevelCache;
   end
   else begin

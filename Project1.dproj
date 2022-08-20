@@ -674,6 +674,30 @@
 				<ResourceType>RCData</ResourceType>
 				<ResourceId>dark_square</ResourceId>
 			</RcItem>
+			<RcItem Include="images\full_berry_bush.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>full_berry_bush</ResourceId>
+			</RcItem>
+			<RcItem Include="images\1_third_berry_bush.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>1_third_berry_bush</ResourceId>
+			</RcItem>
+			<RcItem Include="images\2_thirds_berry_bush.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>2_thirds_berry_bush</ResourceId>
+			</RcItem>
+			<RcItem Include="images\empty_berry_bush.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>empty_berry_bush</ResourceId>
+			</RcItem>
+			<RcItem Include="images\Toolbar.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>Toolbar</ResourceId>
+			</RcItem>
+			<RcItem Include="images\selectedSlot.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>selectedSlot</ResourceId>
+			</RcItem>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
