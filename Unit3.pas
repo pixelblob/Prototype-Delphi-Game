@@ -36,7 +36,6 @@ type
     { Private declarations }
   public
     { Public declarations }
-    gameObjects: array of TGameObject;
   end;
 
 var
@@ -62,7 +61,6 @@ var
 
   Distance: Real;
   Seed: Integer = 69420;
-  gameObjects: array of TGameObject;
   berryBushObjects: array of TBerryBush;
   generatedQuadrents: array of Integer;
 
@@ -117,6 +115,13 @@ begin
       break;
     end;
   end;
+end;
+
+function seedFromQuad : Integer;
+begin
+  Result := Math.Floor((PlayerActualX + PlayerX + 32)
+          / Form3.ClientWidth) + Math.Floor((PlayerActualY + PlayerY + 32)
+          / Form3.ClientHeight);
 end;
 
 procedure updateLevelCache;
@@ -250,6 +255,47 @@ begin
 
 end;
 
+procedure setPlayerQuad;
+var
+  quadGenerated: Boolean;
+var
+  I: Integer;
+  newGameObject: TBerryBush;
+begin
+  quadGenerated := False;
+  playerQuadX := Math.Floor(PlayerActualX / Form3.ClientWidth);
+  playerQuadY := Math.Floor(PlayerActualY / Form3.ClientHeight);
+
+  for I := 1 to Length(generatedQuadrents) do begin
+    if (generatedQuadrents[I] = Math.Floor((PlayerActualX + PlayerX + 32)
+          / Form3.ClientWidth) + Math.Floor((PlayerActualY + PlayerY + 32)
+          / Form3.ClientHeight)) then begin
+
+      quadGenerated := True;
+
+    end;
+  end;
+
+  if quadGenerated = False then begin
+    writeln('GENERATING BERRYS');
+    SetLength(generatedQuadrents, Length(generatedQuadrents) + 1);
+    generatedQuadrents[I] := Math.Floor((PlayerActualX + PlayerX + 32)
+          / Form3.ClientWidth) + Math.Floor((PlayerActualY + PlayerY + 32)
+          / Form3.ClientHeight);
+          RandSeed := seedFromQuad;
+    for I := 1 to Random(10) do begin
+      newGameObject := TBerryBush.create;
+      newGameObject.x := Random(40) + playerQuadX * 40;
+      newGameObject.y := Random(20) + playerQuadY * 20;
+      newGameObject.growthStage := Random(4) + 1;
+      SetLength(berryBushObjects, Length(berryBushObjects) + 1);
+      berryBushObjects[ High(berryBushObjects)] := newGameObject;
+    end;
+  end;
+
+  updateLevelCache;
+end;
+
 procedure TForm3.FormCreate(Sender: TObject);
 var
   I, x, y: Integer;
@@ -358,12 +404,7 @@ begin
     end;
   end;
 
-  newGameObject := TBerryBush.create;
-  newGameObject.x := 3;
-  newGameObject.y := 4;
-  newGameObject.growthStage := 4;
-  SetLength(berryBushObjects, Length(berryBushObjects) + 1);
-  berryBushObjects[ High(berryBushObjects)] := newGameObject;
+  setPlayerQuad;
 
   updateLevelCache;
   // updateBrightnessCache;
@@ -410,42 +451,6 @@ begin
   CURRENTFPS := FPS;
   setCaption;
   FPS := 0;
-end;
-
-procedure setPlayerQuad;
-var
-  quadGenerated: Boolean;
-var
-  I: Integer;
-  newGameObject: TBerryBush;
-begin
-  quadGenerated := False;
-  playerQuadX := Math.Floor(PlayerActualX / Form3.ClientWidth);
-  playerQuadY := Math.Floor(PlayerActualY / Form3.ClientHeight);
-
-  for I := 1 to Length(generatedQuadrents) do begin
-    if (generatedQuadrents[I] = Math.Floor((PlayerActualX + PlayerX + 32)
-          / Form3.ClientWidth) + Math.Floor((PlayerActualY + PlayerY + 32)
-          / Form3.ClientHeight)) then begin
-
-      quadGenerated := True;
-
-    end;
-  end;
-
-  if quadGenerated = False then begin
-    writeln('GENERATING BERRYS');
-    for I := 1 to Random(10) do begin
-      newGameObject := TBerryBush.create;
-      newGameObject.x := Random(40) + playerQuadX * 40;
-      newGameObject.y := Random(20) + playerQuadY * 20;
-      newGameObject.growthStage := Random(4) + 1;
-      SetLength(berryBushObjects, Length(berryBushObjects) + 1);
-      berryBushObjects[ High(berryBushObjects)] := newGameObject;
-    end;
-  end;
-
-  updateLevelCache;
 end;
 
 procedure TForm3.gameLoopTimer(Sender: TObject);
@@ -578,6 +583,8 @@ begin
 
 
   // COLLISON STUFFS
+
+  //writeln(Length(gameObjects));
 
   for I := 0 to Length(gameObjects) - 1 do begin
     if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX)

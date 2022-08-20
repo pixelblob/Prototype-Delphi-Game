@@ -8,6 +8,8 @@ type
     objectType: String;
   end;
 
+  var gameObjects: array of TGameObject;
+
 procedure removeGameObject(x, y: Integer);
 procedure addGameObject(x, y: Integer; objectType: String);
 function getGameObject(x, y: Integer): TGameObject;
