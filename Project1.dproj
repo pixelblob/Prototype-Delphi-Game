@@ -703,6 +703,10 @@
 				<ResourceType>RCData</ResourceType>
 				<ResourceId>Toolbar</ResourceId>
 			</RcItem>
+			<RcItem Include="images\plank.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>plank</ResourceId>
+			</RcItem>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
