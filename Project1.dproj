@@ -46,6 +46,7 @@
 			<DCCReference Include="Unit3.pas">
 				<Form>Form3</Form>
 			</DCCReference>
+			<DCCReference Include="gameObjectManagement.pas"/>
 			<RcItem Include="images\man_01.png">
 				<ResourceType>RCData</ResourceType>
 				<ResourceId>man_01</ResourceId>
@@ -690,13 +691,17 @@
 				<ResourceType>RCData</ResourceType>
 				<ResourceId>empty_berry_bush</ResourceId>
 			</RcItem>
-			<RcItem Include="images\Toolbar.png">
-				<ResourceType>RCData</ResourceType>
-				<ResourceId>Toolbar</ResourceId>
-			</RcItem>
 			<RcItem Include="images\selectedSlot.png">
 				<ResourceType>RCData</ResourceType>
 				<ResourceId>selectedSlot</ResourceId>
+			</RcItem>
+			<RcItem Include="images\missing.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>missing</ResourceId>
+			</RcItem>
+			<RcItem Include="images\Toolbar.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>Toolbar</ResourceId>
 			</RcItem>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>

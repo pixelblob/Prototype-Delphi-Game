@@ -4,7 +4,8 @@ program Project1;
 
 uses
   Forms,
-  Unit3 in 'Unit3.pas' {Form3};
+  Unit3 in 'Unit3.pas' {Form3},
+  gameObjectManagement in 'gameObjectManagement.pas';
 
 {$R *.res}
 
