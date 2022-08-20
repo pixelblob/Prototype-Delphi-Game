@@ -670,6 +670,10 @@
 				<ResourceType>RCData</ResourceType>
 				<ResourceId>pause_screen</ResourceId>
 			</RcItem>
+			<RcItem Include="images\dark_square.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>dark_square</ResourceId>
+			</RcItem>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

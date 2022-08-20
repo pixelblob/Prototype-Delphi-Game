@@ -42,6 +42,12 @@ object Form3: TForm3
     Height = 105
     Visible = False
   end
+  object brightnessMap: TImage
+    Left = 0
+    Top = 408
+    Width = 105
+    Height = 105
+  end
   object gameLoop: TTimer
     Interval = 1
     OnTimer = gameLoopTimer

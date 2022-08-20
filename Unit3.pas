@@ -34,6 +34,7 @@ type
     LevelImage: TImage;
     FpsReset: TTimer;
     cachedLevel: TImage;
+    brightnessMap: TImage;
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -61,14 +62,14 @@ var
   grassTileImages: array [1 .. 6] of TJPEGImage;
   SelectedSlot: Integer = 0;
 
-  bush, tree1, tree2, tree3, tree4, playerImage, selectorImage,
+  bush, tree1, tree2, tree3, tree4, playerImage, darkImage, selectorImage,
     nopeSelectorImage, heartImage, pauseScreen: TGraphic;
 
   PlayerX, PlayerActualX, PlayerY, PlayerActualY, oldWindowX, oldWindowY,
     playerQuadX, playerQuadY, CURRENTFPS, FPS, cursorGridX, cursorGridY,
     paused: Integer;
 
-  objectBitmapCache: TBitmap;
+  objectBitmapCache, lightBitmapCache: TBitmap;
 
   Distance: Real;
   Seed: Integer = 69420;
@@ -150,6 +151,36 @@ begin
   if (occupied = False) then
     result := nil;
 end;
+
+procedure updateBrightnessCache;
+var
+  I,x, y, R, objectIndex: Integer;
+begin
+
+  Form3.brightnessMap.canvas.pen.color := clwhite;
+  Form3.brightnessMap.canvas.brush.color := clwhite;
+  Form3.brightnessMap.canvas.rectangle(0, 0, Form3.brightnessMap.width,
+    Form3.brightnessMap.height);
+
+  for x := 0 to 40 do begin
+    for y := 0 to 20 do begin
+      Form3.brightnessMap.canvas.Draw(x * 32, y * 32, darkImage)
+    end;
+  end;
+
+  lightBitmapCache := TBitmap.create;
+  lightBitmapCache.canvas.brush.Handle := 0;
+  lightBitmapCache.Transparent := True;
+
+  lightBitmapCache.width := Form3.width;
+  lightBitmapCache.height := Form3.height;
+
+  lightBitmapCache.canvas.CopyRect(lightBitmapCache.canvas.ClipRect,
+    Form3.brightnessMap.canvas, Form3.brightnessMap.canvas.ClipRect);
+
+  writeln('UPDATED LIGHT CACHE');
+end;
+
 
 procedure removeGameObject(x, y: Integer);
 var
@@ -252,6 +283,9 @@ begin
   Form3.cachedLevel.width := Form3.width;
   Form3.cachedLevel.height := Form3.height;
 
+  Form3.brightnessMap.width := Form3.width;
+  Form3.brightnessMap.height := Form3.height;
+
   PlayerX := 0;
   PlayerY := 0;
 
@@ -276,6 +310,7 @@ begin
   end;
 
   playerImage := TPngImage.create;
+  darkImage := TPngImage.create;
   selectorImage := TPngImage.create;
   nopeSelectorImage := TPngImage.create;
   heartImage := TPngImage.create;
@@ -283,6 +318,10 @@ begin
 
   T := TResourceStream.create(hInstance, 'man_01', RT_RCDATA);
   playerImage.LoadFromStream(T);
+  T.Free;
+
+  T := TResourceStream.create(hInstance, 'dark_square', RT_RCDATA);
+  darkImage.LoadFromStream(T);
   T.Free;
 
   T := TResourceStream.create(hInstance, 'pause_screen', RT_RCDATA);
@@ -327,6 +366,7 @@ begin
   end;
 
   updateLevelCache;
+  updateBrightnessCache;
 
 end;
 
@@ -384,7 +424,7 @@ var
   pt: tPoint;
 var
   frame: TGraphic;
-  I, R, speed, objectIndex: Integer;
+  I, R, x, y, speed, objectIndex: Integer;
   Bitmap: TBitmap;
   tempcanvas: TCanvas;
   WindowHandle: HWND;
@@ -521,8 +561,9 @@ begin
       // writeln((ABS((playerY+32) - gameObjects[I].Y*32)));
       // if ((ABS((playerX) - gameObjects[I].x*32) <= 32) and (ABS((playerY) - gameObjects[I].Y*32) <= 16)) then begin
       // writeln(ABS(playerX - gameObjects[I].x*32));
-      if ((ABS(PlayerX+ (playerQuadX * 40 * 32) + 16 - gameObjects[I].x * 32) <= 20) and
-          (ABS(PlayerY+ (playerQuadY * 20 * 32) + 16 - gameObjects[I].y * 32) <= 20)) then begin
+      if ((ABS(PlayerX + (playerQuadX * 40 * 32) + 16 - gameObjects[I].x * 32)
+            <= 20) and (ABS(PlayerY + (playerQuadY * 20 * 32)
+              + 16 - gameObjects[I].y * 32) <= 20)) then begin
 
         PlayerX := PrevX;
         PlayerY := PrevY;
@@ -531,6 +572,8 @@ begin
 
     end;
   end;
+
+
 
 
 
