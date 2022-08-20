@@ -3,22 +3,8 @@
 interface
 
 uses
-  Windows,
-  Messages,
-  SysUtils,
-  Variants,
-  Classes,
-  Graphics,
-  Controls,
-  Forms,
-  Dialogs,
-  pngimage,
-  ExtCtrls,
-  jpeg,
-  Math,
-  Sockets,
-  DateUtils,
-  StdCtrls,
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, pngimage, ExtCtrls, jpeg, Math, Sockets, DateUtils, StdCtrls,
   gameObjectManagement;
 
 type
@@ -122,7 +108,6 @@ implementation
 function getTexture(texture: String): TGraphic;
 var
   I: Integer;
-  gameTexture: TGraphic;
 begin
   // writeln('Requested Texture: '+texture);
   Result := gameTextures[1];
@@ -189,7 +174,7 @@ end;
 
 procedure updateBrightnessCache;
 var
-  I, x, y, R, objectIndex: Integer;
+  x, y: Integer;
 begin
 
   Form3.brightnessMap.canvas.pen.color := clwhite;
@@ -361,7 +346,6 @@ begin
   for x := 0 + (5) to 4 + (5) do begin
     for y := 0 + (5) to 4 + (5) do begin
       if ((x = 0 + (5)) or (x = 4 + (5))) then
-      gameObjectManagement.
         gameObjectManagement.addGameObject(x, y, 'brick');
 
       if ((y = 0 + (5)) or (y = 4 + (5))) then begin
@@ -429,11 +413,13 @@ begin
 end;
 
 procedure setPlayerQuad;
-var quadGenerated: Boolean;
-var I: Integer;
- newGameObject : TBerryBush;
+var
+  quadGenerated: Boolean;
+var
+  I: Integer;
+  newGameObject: TBerryBush;
 begin
-quadGenerated := False;
+  quadGenerated := False;
   playerQuadX := Math.Floor(PlayerActualX / Form3.ClientWidth);
   playerQuadY := Math.Floor(PlayerActualY / Form3.ClientHeight);
 
@@ -442,7 +428,7 @@ quadGenerated := False;
           / Form3.ClientWidth) + Math.Floor((PlayerActualY + PlayerY + 32)
           / Form3.ClientHeight)) then begin
 
-          quadGenerated := True;
+      quadGenerated := True;
 
     end;
   end;
@@ -451,9 +437,9 @@ quadGenerated := False;
     writeln('GENERATING BERRYS');
     for I := 1 to Random(10) do begin
       newGameObject := TBerryBush.create;
-      newGameObject.x := Random(40)+ playerQuadX * 40;
-      newGameObject.y := Random(20)+ playerQuadY * 20;
-      newGameObject.growthStage := Random(4)+1;
+      newGameObject.x := Random(40) + playerQuadX * 40;
+      newGameObject.y := Random(20) + playerQuadY * 20;
+      newGameObject.growthStage := Random(4) + 1;
       SetLength(berryBushObjects, Length(berryBushObjects) + 1);
       berryBushObjects[ High(berryBushObjects)] := newGameObject;
     end;
@@ -466,12 +452,7 @@ procedure TForm3.gameLoopTimer(Sender: TObject);
 var
   pt: tPoint;
 var
-  frame: TGraphic;
-  I, R, x, y, speed, objectIndex: Integer;
-  Bitmap: TBitmap;
-  tempcanvas: TCanvas;
-  WindowHandle: HWND;
-  ScreenDC, bufferDC: HDC;
+  I, speed: Integer;
   PrevX, PrevY: Integer;
 begin
 

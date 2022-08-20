@@ -13,7 +13,6 @@ procedure addGameObject(x, y: Integer; objectType: String);
 function getGameObject(x, y: Integer): TGameObject;
 
 implementation
-
 uses Unit3;
 
 function getGameObject(x, y: Integer): TGameObject;
