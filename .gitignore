@@ -66,5 +66,4 @@ __recovery/
 
 # Boss dependency manager vendor folder https://github.com/HashLoad/boss
 modules/
-data.txt
-player_data.txt
+*.txt
