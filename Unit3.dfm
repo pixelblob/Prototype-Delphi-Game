@@ -15,6 +15,7 @@ object Form3: TForm3
   HelpFile = 'Help.chm'
   OldCreateOrder = False
   Position = poDesigned
+  OnClose = FormClose
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   OnKeyUp = FormKeyUp

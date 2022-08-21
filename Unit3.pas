@@ -33,6 +33,7 @@ type
       Shift: TShiftState; x, y: Integer);
     procedure Image1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; x, y: Integer);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
@@ -168,7 +169,7 @@ var
 begin
 
   Asc := round((Sin(playerQuadX) + tan(playerQuadY)) * 1000);
-  writeln('Seed: ' + inttostr(Asc));
+  //writeln('Seed: ' + inttostr(Asc));
   Result := Asc;
 
 end;
@@ -280,7 +281,7 @@ begin
     (PlayerActualX + PlayerX) + ' ActualY: ' + inttostr
     (PlayerActualY + PlayerY) + ' Quad: (' + inttostr(playerQuadX)
     + ';' + inttostr(playerQuadY) + ')' + ' Seed: ' + inttostr
-    (round((Sin(playerQuadX) + tan(playerQuadY)) * 1000));
+    (seedFromQuad) + ' GQ: '+inttostr(Length(generatedQuadrents));
 end;
 
 procedure placeGround();
@@ -317,8 +318,9 @@ begin
   playerQuadY := Math.Floor(PlayerActualY / Form3.ClientHeight);
 
   for I := 1 to Length(generatedQuadrents) do begin
+    writeln(generatedQuadrents[I]);
     if (generatedQuadrents[I] = seedFromQuad) then begin
-
+      writeln('FOUND QUAD');
       quadGenerated := True;
 
     end;
@@ -328,7 +330,7 @@ begin
     writeln('GENERATING BERRYS');
     SetLength(generatedQuadrents, Length(generatedQuadrents) + 1);
     Seed := seedFromQuad;
-    generatedQuadrents[Length(generatedQuadrents)] := Seed;
+    generatedQuadrents[High(generatedQuadrents)] := Seed;
     randseed := Seed;
     writeln(Seed);
     for I := 1 to Random(10) + 2 do begin
@@ -347,6 +349,61 @@ begin
   updateLevelCache;
 end;
 
+procedure saveGame;
+var saveGameFile : textFile;
+var I : Integer;
+begin
+  AssignFile( saveGameFile, 'data.txt');
+  Rewrite( saveGameFile );
+  for I := 0 to Length(gameObjects) - 1 do begin
+    writeln(saveGameFile, gameObjects[I].x);
+    writeln(saveGameFile, gameObjects[I].y);
+    writeln(saveGameFile, gameObjects[I].objectType);
+    writeln(saveGameFile);
+  end;
+  Closefile( saveGameFile )
+end;
+
+procedure loadGame;
+var saveGameFile : textFile;
+var I, x, y : Integer;
+sLine, objectType : String;
+begin
+  if FileExists('data.txt') then begin
+    AssignFile( saveGameFile, 'data.txt');
+    Reset( saveGameFile );
+
+    I := 0;
+
+    while not eof( saveGameFile ) do begin
+      readln( saveGameFile, sLine );
+
+      case I of
+        0: x := strtoint(sLine);
+        1: y:= strtoint(sLine);
+        2: objectType := sLine;
+      end;
+
+
+      I := I+1;
+      if I > 3 then begin
+        I := 0;
+        addGameObject(x, y, objectType);
+        writeln('Loaded: '+objectType+' at x: '+inttostr(X)+' y: '+inttostr(y));
+      end;
+
+    end;
+
+    Closefile( saveGameFile );
+  end;
+
+end;
+
+procedure TForm3.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+saveGame;
+end;
+
 procedure TForm3.FormCreate(Sender: TObject);
 var
   I, x, y: Integer;
@@ -354,9 +411,13 @@ var
   newGameObject: TBerryBush;
 begin
 
+
+
   paused := 1;
 
   AllocConsole;
+
+  loadGame;
 
   oldWindowX := Form3.Left;
   oldWindowY := Form3.Top;
