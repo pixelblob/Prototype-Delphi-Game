@@ -502,20 +502,20 @@ begin
 
   placeGround;
 
-  for x := 0 + (5) to 4 + (5) do begin
-    for y := 0 + (5) to 4 + (5) do begin
-      if ((x = 0 + (5)) or (x = 4 + (5))) then
-        gameObjectManagement.addGameObject(x, y, 'brick');
+  //for x := 0 + (5) to 4 + (5) do begin
+    //for y := 0 + (5) to 4 + (5) do begin
+      //if ((x = 0 + (5)) or (x = 4 + (5))) then
+        //gameObjectManagement.addGameObject(x, y, 'brick');
 
-      if ((y = 0 + (5)) or (y = 4 + (5))) then begin
-        if ((y = 0 + (5)) and (x = 2 + (5))) then
-        else
-          addGameObject(x, y, 'brick');
+      //if ((y = 0 + (5)) or (y = 4 + (5))) then begin
+       // if ((y = 0 + (5)) and (x = 2 + (5))) then
+       // else
+         // addGameObject(x, y, 'brick');
 
-      end;
+     // end;
 
-    end;
-  end;
+   // end;
+  //end;
 
   setPlayerQuad;
 
