@@ -13,6 +13,12 @@ type
   end;
 
 type
+  TPlayer = class(TGameObject)
+    x, y: Integer;
+    id: String;
+  end;
+
+type
 
   TForm3 = class(TForm)
     Image1: TImage;
@@ -46,7 +52,7 @@ var
   grassTileImages: array [1 .. 6] of TJPEGImage;
   SelectedSlot: Integer = 0;
 
-  bush, tree1, tree2, tree3, tree4, playerImage, darkImage, selectorImage, nopeSelectorImage, heartImage, toolbarImage, selectedSlotImage,
+  bush, tree1, tree2, tree3, tree4, playerImage, playerImage2, darkImage, selectorImage, nopeSelectorImage, heartImage, toolbarImage, selectedSlotImage,
     pauseScreen: TGraphic;
 
   PlayerX, PlayerActualX, PlayerY, PlayerActualY, oldWindowX, oldWindowY, playerQuadX, playerQuadY, CURRENTFPS, FPS, cursorGridX, cursorGridY, paused: Integer;
@@ -56,13 +62,15 @@ var
   Distance: Real;
   Seed: Integer = 69420;
   berryBushObjects: array of TBerryBush;
+  players: array of TPlayer;
   generatedQuadrents: array of Integer;
 
 const
-  gameTextureNames: array [1 .. 8] of string = ('missing', 'selectedSlot', 'Toolbar', 'pause_screen', 'man_01', 'PngImage_1', 'PngImage_18', 'PngImage_17');
+  gameTextureNames: array [1 .. 9] of string = ('missing', 'selectedSlot', 'Toolbar', 'pause_screen', 'man_01', 'PngImage_1', 'PngImage_18', 'PngImage_17',
+    'man_01_green');
 
 var
-  gameTextures: array [1 .. 8] of TGraphic;
+  gameTextures: array [1 .. 9] of TGraphic;
   growthStageTextureNames: array [1 .. 4] of string = (
     'empty_berry_bush',
     '1_third_berry_bush',
@@ -96,6 +104,73 @@ var
 implementation
 
 {$R *.dfm}
+
+function getPlayer(id: String): TPlayer;
+var
+  Player: TPlayer;
+  I: Integer;
+begin
+
+  for I := 0 to Length(players) - 1 do begin
+    if players[I].id = id then begin
+      Result := players[I];
+      break;
+    end;
+  end;
+
+  Result := nil;
+end;
+
+function getPlayerIndex(id: String): Integer;
+var
+  Player: TPlayer;
+  I: Integer;
+begin
+
+  for I := 0 to Length(players) - 1 do begin
+    if players[I].id = id then begin
+      Result := I;
+      break;
+    end;
+  end;
+
+  Result := -1;
+end;
+
+function addPlayer(x, y: Integer; id: String): TPlayer;
+var
+  newPlayer: TPlayer;
+begin
+  newPlayer := TPlayer.create;
+  newPlayer.x := x;
+  newPlayer.y := y;
+  newPlayer.id := id;
+  SetLength(players, Length(players) + 1);
+  players[ High(players)] := newPlayer;
+  Result := newPlayer;
+end;
+
+function deletePlayer(id: String): Boolean;
+var
+  PlayerIndex: Integer;
+  ALength: Cardinal;
+  i: Cardinal;
+begin
+
+  PlayerIndex := getPlayerIndex(id);
+
+  if PlayerIndex <> -1 then begin
+
+    ALength := Length(players);
+    for I := PlayerIndex + 1 to ALength - 1 do
+      players[I - 1] := players[I];
+    SetLength(players, ALength - 1);
+
+  end
+  else
+    Result := False;
+
+end;
 
 procedure TForm3.ApplicationMessage(var Msg: tagMSG; var Handled: Boolean);
 var
@@ -408,6 +483,7 @@ begin
   end;
 
   playerImage := getTexture('man_01');
+  playerImage2 := getTexture('man_01_green');
 
   darkImage := getTexture('dark_square');
 
@@ -561,6 +637,7 @@ begin
   Form3.Image1.canvas.Draw(0, 0, objectBitmapCache);
 
   Form3.Image1.canvas.Draw(PlayerX + 16, PlayerY + 16, playerImage);
+  Form3.Image1.canvas.Draw(PlayerX + 16, PlayerY + 36, playerImage2);
 
   placeGround();
 

@@ -707,6 +707,10 @@
 				<ResourceType>RCData</ResourceType>
 				<ResourceId>plank</ResourceId>
 			</RcItem>
+			<RcItem Include="images\man_01_green.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>man_01_green</ResourceId>
+			</RcItem>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
