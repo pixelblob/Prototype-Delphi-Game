@@ -20,7 +20,6 @@ type
     LevelImage: TImage;
     FpsReset: TTimer;
     cachedLevel: TImage;
-    brightnessMap: TImage;
     procedure ApplicationMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -29,10 +28,8 @@ type
     procedure FpsResetTimer(Sender: TObject);
     procedure pauseGame();
     procedure unpauseGame();
-    procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; x, y: Integer);
-    procedure Image1MouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; x, y: Integer);
+    procedure Image1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; x, y: Integer);
+    procedure Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; x, y: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
@@ -44,23 +41,17 @@ var
   Form3: TForm3;
   jpg: TJPEGImage;
   png: TGraphic;
-  forwardKey, backwardKey, leftKey, rightKey, isMouseDown,
-    isLeftMouseDown: Boolean;
+  forwardKey, backwardKey, leftKey, rightKey, isMouseDown, isLeftMouseDown: Boolean;
 
   grassTileImages: array [1 .. 6] of TJPEGImage;
   SelectedSlot: Integer = 0;
 
-  bush, tree1, tree2, tree3, tree4, playerImage, darkImage, selectorImage,
-    nopeSelectorImage, heartImage, toolbarImage, selectedSlotImage,
+  bush, tree1, tree2, tree3, tree4, playerImage, darkImage, selectorImage, nopeSelectorImage, heartImage, toolbarImage, selectedSlotImage,
     pauseScreen: TGraphic;
 
-  PlayerX, PlayerActualX, PlayerY, PlayerActualY, oldWindowX, oldWindowY,
-    playerQuadX, playerQuadY, CURRENTFPS, FPS, cursorGridX, cursorGridY,
-    paused: Integer;
+  PlayerX, PlayerActualX, PlayerY, PlayerActualY, oldWindowX, oldWindowY, playerQuadX, playerQuadY, CURRENTFPS, FPS, cursorGridX, cursorGridY, paused: Integer;
 
   objectBitmapCache: TBitmap;
-
-  lightBitmapCache: TPngImage;
 
   Distance: Real;
   Seed: Integer = 69420;
@@ -68,9 +59,7 @@ var
   generatedQuadrents: array of Integer;
 
 const
-  gameTextureNames: array [1 .. 8] of string = ('missing', 'selectedSlot',
-    'Toolbar', 'pause_screen', 'man_01', 'PngImage_1', 'PngImage_18',
-    'PngImage_17');
+  gameTextureNames: array [1 .. 8] of string = ('missing', 'selectedSlot', 'Toolbar', 'pause_screen', 'man_01', 'PngImage_1', 'PngImage_18', 'PngImage_17');
 
 var
   gameTextures: array [1 .. 8] of TGraphic;
@@ -110,38 +99,27 @@ implementation
 
 procedure TForm3.ApplicationMessage(var Msg: tagMSG; var Handled: Boolean);
 var
-Window :
-  HWND;
-WinControl :
-  TWinControl;
-Control :
-  TControl;
-Message :
-  TMessage;
+  Window: HWND;
+  WinControl: TWinControl;
+  Control: TControl;
+  Message: TMessage;
 begin
-       writeln(Msg.message);
-if Msg.message = WM_MOUSEWHEEL then
-  begin
-     Window := WindowFromPoint(Msg.pt);
-     if Window <> 0 then
-     begin
-       WinControl := FindControl(Window);
-       if WinControl <> nil then
-       begin
-         Control := WinControl.ControlAtPos(WinControl.ScreenToClient(Msg.pt),
-           False);
-         if Control <> nil then
-         begin
-           Message.WParam := Msg.wParam;
-           Message.LParam := Msg.lParam;
-           TCMMouseWheel(Message).ShiftState :=
-             KeysToShiftState(TWMMouseWheel(Message).Keys);
-           Message.Result := Control.Perform(CM_MOUSEWHEEL, Message.WParam,
-             Message.LParam);
-           Handled := Message.Result <> 0;
-         end;
-       end;
-     end;
+  writeln(Msg.message);
+  if Msg.message = WM_MOUSEWHEEL then begin
+    Window := WindowFromPoint(Msg.pt);
+    if Window <> 0 then begin
+      WinControl := FindControl(Window);
+      if WinControl <> nil then begin
+        Control := WinControl.ControlAtPos(WinControl.ScreenToClient(Msg.pt), False);
+        if Control <> nil then begin
+          Message.WParam := Msg.WParam;
+          Message.LParam := Msg.LParam;
+          TCMMouseWheel(Message).ShiftState := KeysToShiftState(TWMMouseWheel(Message).Keys);
+          Message.Result := Control.Perform(CM_MOUSEWHEEL, Message.WParam, Message.LParam);
+          Handled := Message.Result <> 0;
+        end;
+      end;
+    end;
   end;
 
 end;
@@ -169,7 +147,7 @@ var
 begin
 
   Asc := round((Sin(playerQuadX) + tan(playerQuadY)) * 1000);
-  //writeln('Seed: ' + inttostr(Asc));
+  // writeln('Seed: ' + inttostr(Asc));
   Result := Asc;
 
 end;
@@ -181,36 +159,27 @@ begin
 
   Form3.cachedLevel.canvas.pen.color := clwhite;
   Form3.cachedLevel.canvas.brush.color := clwhite;
-  Form3.cachedLevel.canvas.rectangle(0, 0, Form3.cachedLevel.width,
-    Form3.cachedLevel.height);
+  Form3.cachedLevel.canvas.rectangle(0, 0, Form3.cachedLevel.width, Form3.cachedLevel.height);
 
   for I := 0 to Length(gameObjects) - 1 do begin
-    if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX)
-        and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight)
-          = playerQuadY)) then begin
+    if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX) and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight) = playerQuadY)) then
+      begin
       for R := 1 to Length(gameObjectTypes) do
         if gameObjectTypes[R] = gameObjects[I].objectType then begin
           objectIndex := R;
         end;
 
-      Form3.cachedLevel.canvas.Draw
-        (gameObjects[I].x * 32 - playerQuadX * 32 * 40,
-        gameObjects[I].y * 32 - playerQuadY * 32 * 20,
+      Form3.cachedLevel.canvas.Draw(gameObjects[I].x * 32 - playerQuadX * 32 * 40, gameObjects[I].y * 32 - playerQuadY * 32 * 20,
         gameObjectTextures[objectIndex]);
     end;
   end;
 
   for I := 0 to Length(berryBushObjects) - 1 do begin
-    if ((Math.Floor(berryBushObjects[I].x * 32 / Form3.ClientWidth)
-          = playerQuadX) and (Math.Floor
-          (berryBushObjects[I].y * 32 / Form3.ClientHeight) = playerQuadY))
-      then begin
+    if ((Math.Floor(berryBushObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX) and (Math.Floor(berryBushObjects[I].y * 32 / Form3.ClientHeight)
+          = playerQuadY)) then begin
 
-      Form3.cachedLevel.canvas.Draw
-        (berryBushObjects[I].x * 32 - playerQuadX * 32 * 40,
-        berryBushObjects[I].y * 32 - playerQuadY * 32 * 20,
-        growthStageTextures[berryBushObjects[I].growthStage]
-        );
+      Form3.cachedLevel.canvas.Draw(berryBushObjects[I].x * 32 - playerQuadX * 32 * 40, berryBushObjects[I].y * 32 - playerQuadY * 32 * 20,
+        growthStageTextures[berryBushObjects[I].growthStage]);
     end;
   end;
 
@@ -221,39 +190,9 @@ begin
   objectBitmapCache.width := Form3.width;
   objectBitmapCache.height := Form3.height;
 
-  objectBitmapCache.canvas.CopyRect(objectBitmapCache.canvas.ClipRect,
-    Form3.cachedLevel.canvas, Form3.cachedLevel.canvas.ClipRect);
+  objectBitmapCache.canvas.CopyRect(objectBitmapCache.canvas.ClipRect, Form3.cachedLevel.canvas, Form3.cachedLevel.canvas.ClipRect);
 
   writeln('UPDATED LEVEL CACHE');
-end;
-
-procedure updateBrightnessCache;
-var
-  x, y: Integer;
-begin
-
-  Form3.brightnessMap.canvas.pen.color := clwhite;
-  Form3.brightnessMap.canvas.brush.color := clwhite;
-  Form3.brightnessMap.canvas.rectangle(0, 0, Form3.brightnessMap.width,
-    Form3.brightnessMap.height);
-
-  for x := 0 to 40 do begin
-    for y := 0 to 20 do begin
-      Form3.brightnessMap.canvas.Draw(x * 32, y * 32, darkImage)
-    end;
-  end;
-
-  lightBitmapCache := TPngImage.create;
-  lightBitmapCache.canvas.brush.Handle := 0;
-  lightBitmapCache.Transparent := True;
-
-  // lightBitmapCache.width := Form3.width;
-  // lightBitmapCache.height := Form3.height;
-
-  lightBitmapCache.canvas.CopyRect(lightBitmapCache.canvas.ClipRect,
-    Form3.brightnessMap.canvas, Form3.brightnessMap.canvas.ClipRect);
-
-  writeln('UPDATED LIGHT CACHE');
 end;
 
 function getBushObject(x, y: Integer): TBerryBush;
@@ -276,12 +215,9 @@ end;
 
 procedure setCaption();
 begin
-  Form3.Caption := 'FPS: ' + inttostr(CURRENTFPS) + ' X: ' + inttostr(PlayerX)
-    + ' Y: ' + inttostr(PlayerY) + ' ActualX: ' + inttostr
-    (PlayerActualX + PlayerX) + ' ActualY: ' + inttostr
-    (PlayerActualY + PlayerY) + ' Quad: (' + inttostr(playerQuadX)
-    + ';' + inttostr(playerQuadY) + ')' + ' Seed: ' + inttostr
-    (seedFromQuad) + ' GQ: '+inttostr(Length(generatedQuadrents));
+  Form3.Caption := 'FPS: ' + inttostr(CURRENTFPS) + ' X: ' + inttostr(PlayerX) + ' Y: ' + inttostr(PlayerY) + ' ActualX: ' + inttostr(PlayerActualX + PlayerX)
+    + ' ActualY: ' + inttostr(PlayerActualY + PlayerY) + ' Quad: (' + inttostr(playerQuadX) + ';' + inttostr(playerQuadY) + ')' + ' Seed: ' + inttostr
+    (seedFromQuad) + ' GQ: ' + inttostr(Length(generatedQuadrents));
 end;
 
 procedure placeGround();
@@ -295,13 +231,11 @@ begin
   Form3.LevelImage.Picture.Bitmap.width := Form3.Image1.width;
   Form3.LevelImage.Picture.Bitmap.height := Form3.Image1.height;
 
-  randseed := Math.Floor((PlayerActualX + PlayerX + 32) / Form3.ClientWidth)
-    + Math.Floor((PlayerActualY + PlayerY + 32) / Form3.ClientHeight) + Seed;
+  randseed := Math.Floor((PlayerActualX + PlayerX + 32) / Form3.ClientWidth) + Math.Floor((PlayerActualY + PlayerY + 32) / Form3.ClientHeight) + Seed;
 
   for x := 0 to round(Form3.Image1.width / 32) do begin
     for y := 0 to round(Form3.Image1.height / 32) do
-      Form3.LevelImage.canvas.Draw(x * 32, y * 32,
-        grassTileImages[RandomRange(1, Length(grassTileImages))]);
+      Form3.LevelImage.canvas.Draw(x * 32, y * 32, grassTileImages[RandomRange(1, Length(grassTileImages))]);
   end;
 
 end;
@@ -330,7 +264,7 @@ begin
     writeln('GENERATING BERRYS');
     SetLength(generatedQuadrents, Length(generatedQuadrents) + 1);
     Seed := seedFromQuad;
-    generatedQuadrents[High(generatedQuadrents)] := Seed;
+    generatedQuadrents[ High(generatedQuadrents)] := Seed;
     randseed := Seed;
     writeln(Seed);
     for I := 1 to Random(10) + 2 do begin
@@ -343,65 +277,70 @@ begin
     end;
   end
   else
-    writeln('Seed for quad has already been generated: ' + inttostr
-        (generatedQuadrents[Length(generatedQuadrents)]));
+    writeln('Seed for quad has already been generated: ' + inttostr(generatedQuadrents[Length(generatedQuadrents)]));
 
   updateLevelCache;
 end;
 
 procedure saveGame;
-var saveGameFile : textFile;
-var I : Integer;
+var
+  saveGameFile: textFile;
+var
+  I: Integer;
 begin
-  AssignFile( saveGameFile, 'data.txt');
-  Rewrite( saveGameFile );
+  AssignFile(saveGameFile, 'data.txt');
+  Rewrite(saveGameFile);
   for I := 0 to Length(gameObjects) - 1 do begin
     writeln(saveGameFile, gameObjects[I].x);
     writeln(saveGameFile, gameObjects[I].y);
     writeln(saveGameFile, gameObjects[I].objectType);
     writeln(saveGameFile);
   end;
-  Closefile( saveGameFile )
+  Closefile(saveGameFile)
 end;
 
 procedure loadGame;
-var saveGameFile : textFile;
-var I, x, y : Integer;
-sLine, objectType : String;
+var
+  saveGameFile: textFile;
+var
+  I, x, y: Integer;
+  sLine, objectType: String;
 begin
   if FileExists('data.txt') then begin
-    AssignFile( saveGameFile, 'data.txt');
-    Reset( saveGameFile );
+    AssignFile(saveGameFile, 'data.txt');
+    Reset(saveGameFile);
 
     I := 0;
 
-    while not eof( saveGameFile ) do begin
-      readln( saveGameFile, sLine );
+    while not eof(saveGameFile) do begin
+      readln(saveGameFile, sLine);
 
       case I of
-        0: x := strtoint(sLine);
-        1: y:= strtoint(sLine);
-        2: objectType := sLine;
+        0:
+          x := strtoint(sLine);
+        1:
+          y := strtoint(sLine);
+        2:
+          objectType := sLine;
       end;
 
-
-      I := I+1;
+      I := I + 1;
       if I > 3 then begin
         I := 0;
         addGameObject(x, y, objectType);
-        writeln('Loaded: '+objectType+' at x: '+inttostr(X)+' y: '+inttostr(y));
+        writeln('Loaded: ' + objectType + ' at x: ' + inttostr(x) + ' y: ' + inttostr(y));
       end;
 
     end;
 
-    Closefile( saveGameFile );
+    Closefile(saveGameFile);
   end;
 
 end;
 
 procedure TForm3.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-saveGame;
+  saveGame;
 end;
 
 procedure TForm3.FormCreate(Sender: TObject);
@@ -410,8 +349,6 @@ var
   T: TResourceStream;
   newGameObject: TBerryBush;
 begin
-
-
 
   paused := 1;
 
@@ -431,9 +368,6 @@ begin
   Form3.cachedLevel.width := Form3.width;
   Form3.cachedLevel.height := Form3.height;
 
-  Form3.brightnessMap.width := Form3.width;
-  Form3.brightnessMap.height := Form3.height;
-
   PlayerX := 0;
   PlayerY := 0;
 
@@ -442,8 +376,7 @@ begin
 
   for I := 1 to Length(gameObjectTextureNames) do begin
     png := TPngImage.create;
-    T := TResourceStream.create(hInstance, gameObjectTextureNames[I],
-      RT_RCDATA);
+    T := TResourceStream.create(hInstance, gameObjectTextureNames[I], RT_RCDATA);
     png.LoadFromStream(T);
     T.Free;
     gameObjectTextures[I] := png;
@@ -451,8 +384,7 @@ begin
 
   for I := 1 to Length(growthStageTextureNames) do begin
     png := TPngImage.create;
-    T := TResourceStream.create(hInstance, growthStageTextureNames[I],
-      RT_RCDATA);
+    T := TResourceStream.create(hInstance, growthStageTextureNames[I], RT_RCDATA);
     png.LoadFromStream(T);
     T.Free;
     growthStageTextures[I] := png;
@@ -502,30 +434,13 @@ begin
 
   placeGround;
 
-  //for x := 0 + (5) to 4 + (5) do begin
-    //for y := 0 + (5) to 4 + (5) do begin
-      //if ((x = 0 + (5)) or (x = 4 + (5))) then
-        //gameObjectManagement.addGameObject(x, y, 'brick');
-
-      //if ((y = 0 + (5)) or (y = 4 + (5))) then begin
-       // if ((y = 0 + (5)) and (x = 2 + (5))) then
-       // else
-         // addGameObject(x, y, 'brick');
-
-     // end;
-
-   // end;
-  //end;
-
   setPlayerQuad;
 
   updateLevelCache;
-  // updateBrightnessCache;
 
 end;
 
-procedure TForm3.FormKeyDown(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure TForm3.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if Key = Word('P') then
     updateLevelCache;
@@ -645,8 +560,7 @@ begin
   end;
 
   // Draws the grass
-  Form3.Image1.canvas.CopyRect(Form3.Image1.canvas.ClipRect,
-    Form3.LevelImage.canvas, Form3.LevelImage.canvas.ClipRect);
+  Form3.Image1.canvas.CopyRect(Form3.Image1.canvas.ClipRect, Form3.LevelImage.canvas, Form3.LevelImage.canvas.ClipRect);
 
   Form3.Image1.canvas.Draw(0, 0, objectBitmapCache);
 
@@ -654,29 +568,21 @@ begin
 
   placeGround();
 
-  // Form3.Image1.canvas.Draw(0, 0, lightBitmapCache);
-
   pt := Mouse.CursorPos;
   pt := ScreenToClient(pt);
 
   if (isMouseDown = True) then begin
-    if ((cursorGridX <> round((pt.x - 16) / 32)) or
-        (cursorGridY <> round((pt.y - 16) / 32))) then begin
+    if ((cursorGridX <> round((pt.x - 16) / 32)) or (cursorGridY <> round((pt.y - 16) / 32))) then begin
       if isLeftMouseDown then begin
         writeln('DRAG-PLACE');
-        addGameObject(cursorGridX + playerQuadX * 40,
-          cursorGridY + playerQuadY * 20, 'brick');
-        addGameObject(round((pt.x - 16) / 32) + playerQuadX * 40,
-          round((pt.y - 16) / 32) + playerQuadY * 20,
-          gameObjectTypes[SelectedSlot + 1]);
+        addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20, 'brick');
+        addGameObject(round((pt.x - 16) / 32) + playerQuadX * 40, round((pt.y - 16) / 32) + playerQuadY * 20, gameObjectTypes[SelectedSlot + 1]);
         updateLevelCache;
       end
       else begin
         writeln('DRAG-DELETE');
-        removeGameObject(cursorGridX + playerQuadX * 40,
-          cursorGridY + playerQuadY * 20);
-        removeGameObject(round((pt.x - 16) / 32) + playerQuadX * 40,
-          round((pt.y - 16) / 32) + playerQuadY * 20);
+        removeGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
+        removeGameObject(round((pt.x - 16) / 32) + playerQuadX * 40, round((pt.y - 16) / 32) + playerQuadY * 20);
         updateLevelCache;
       end;
     end;
@@ -685,10 +591,8 @@ begin
   cursorGridX := round((pt.x - 16) / 32);
   cursorGridY := round((pt.y - 16) / 32);
 
-  if gameObjectManagement.getGameObject(cursorGridX + playerQuadX * 40,
-    cursorGridY + playerQuadY * 20) <> nil then begin
-    Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32,
-      nopeSelectorImage);
+  if gameObjectManagement.getGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20) <> nil then begin
+    Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32, nopeSelectorImage);
   end
   else begin
     Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32, selectorImage);
@@ -698,48 +602,33 @@ begin
 
   // COLLISON STUFFS
 
-  // writeln(Length(gameObjects));
-
   for I := 0 to Length(gameObjects) - 1 do begin
-    if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX)
-        and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight)
-          = playerQuadY)) then begin
+    if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX) and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight) = playerQuadY)) then
+      begin
 
       if (gameObjects[I].objectType = 'brick') then begin
 
-        if ((ABS(PlayerX + (playerQuadX * 40 * 32) + 16 - gameObjects[I].x * 32)
-            <= 20) and (ABS(PlayerY + (playerQuadY * 20 * 32)
-              + 16 - gameObjects[I].y * 32) <= 20)) then begin
+        if ((ABS(PlayerX + (playerQuadX * 40 * 32) + 16 - gameObjects[I].x * 32) <= 20) and
+            (ABS(PlayerY + (playerQuadY * 20 * 32) + 16 - gameObjects[I].y * 32) <= 20)) then begin
 
-        PlayerX := PrevX;
-        PlayerY := PrevY;
+          PlayerX := PrevX;
+          PlayerY := PrevY;
 
-      end;
-
-      // writeln((ABS((playerY+32) - gameObjects[I].Y*32)));
-      // if ((ABS((playerX) - gameObjects[I].x*32) <= 32) and (ABS((playerY) - gameObjects[I].Y*32) <= 16)) then begin
-      // writeln(ABS(playerX - gameObjects[I].x*32));
-
-
+        end;
       end;
 
     end;
   end;
-  Form3.Image1.canvas.Draw(Form3.ClientWidth - 32,
-    round(Form3.ClientHeight / 2) - 5 * 32, getTexture('Toolbar'));
+  Form3.Image1.canvas.Draw(Form3.ClientWidth - 32, round(Form3.ClientHeight / 2) - 5 * 32, getTexture('Toolbar'));
 
-  Form3.Image1.canvas.Draw(Form3.ClientWidth - 26,
-    (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * SelectedSlot),
-    selectedSlotImage);
+  Form3.Image1.canvas.Draw(Form3.ClientWidth - 26, (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * SelectedSlot), selectedSlotImage);
 
-    for I := 0 to 2 do begin
+  for I := 0 to 2 do begin
 
-    Form3.Image1.canvas.StretchDraw(Rect(Form3.ClientWidth - 25, (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I), Form3.ClientWidth - 26+18, (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I)+18), gameObjectTextures[I + 1]);
+    Form3.Image1.canvas.StretchDraw(Rect(Form3.ClientWidth - 25, (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I), Form3.ClientWidth - 26 + 18,
+        (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I) + 18), gameObjectTextures[I + 1]);
 
   end;
-
-  // for I := 0 to 5 do
-  // Form3.Image1.canvas.Draw(5, (32 * I) + 5, heartImage);       HEART STUFF, DONT NEED IT YET...
 
   setCaption();
 
@@ -747,8 +636,7 @@ begin
 
 end;
 
-procedure TForm3.Image1MouseDown(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; x, y: Integer);
+procedure TForm3.Image1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; x, y: Integer);
 var
   berryBush: TBerryBush;
   I: Integer;
@@ -757,16 +645,9 @@ begin
   isMouseDown := True;
   slotSelect := False;
 
-
-  // Form3.Image1.canvas.Draw(Form3.ClientWidth - 26,
-  // (round(Form3.ClientHeight / 2) - 5 * 32)+12+(23*SelectedSlot), selectedSlotImage);
-
   for I := 0 to 12 do begin
-    if ((x >= Form3.ClientWidth - 26) and (x <= Form3.ClientWidth - 26 + 320))
-      then
-      if ((y >= (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I))) and
-        ((y <= (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I) + 20))
-        then begin
+    if ((x >= Form3.ClientWidth - 26) and (x <= Form3.ClientWidth - 26 + 320)) then
+      if ((y >= (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I))) and ((y <= (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I) + 20)) then begin
         writeln('Selected Slot: ' + inttostr(I));
         SelectedSlot := I;
         slotSelect := True;
@@ -781,8 +662,7 @@ begin
 
   if slotSelect <> True then begin
     if isLeftMouseDown then begin
-      berryBush := getBushObject(cursorGridX + playerQuadX * 40,
-        cursorGridY + playerQuadY * 20);
+      berryBush := getBushObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
       if berryBush <> nil then begin
         writeln('HARVEST');
         if (berryBush.growthStage > 1) then
@@ -790,16 +670,13 @@ begin
       end
       else begin
         writeln('PLACE');
-        addGameObject(cursorGridX + playerQuadX * 40,
-          cursorGridY + playerQuadY * 20,
-          gameObjectTypes[SelectedSlot + 1]);
+        addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20, gameObjectTypes[SelectedSlot + 1]);
       end;
       updateLevelCache;
     end
     else begin
       writeln('DELETE');
-      removeGameObject(cursorGridX + playerQuadX * 40,
-        cursorGridY + playerQuadY * 20);
+      removeGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
       updateLevelCache;
     end;
 
@@ -807,8 +684,7 @@ begin
 
 end;
 
-procedure TForm3.Image1MouseUp(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; x, y: Integer);
+procedure TForm3.Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; x, y: Integer);
 begin
   isMouseDown := False;
 
