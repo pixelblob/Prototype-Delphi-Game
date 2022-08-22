@@ -141,9 +141,6 @@ end;
 function seedFromQuad: Integer;
 var
   Asc: Integer;
-  s: String;
-var
-  I: Integer;
 begin
 
   Asc := round((Sin(playerQuadX) + tan(playerQuadY)) * 1000);
@@ -345,9 +342,8 @@ end;
 
 procedure TForm3.FormCreate(Sender: TObject);
 var
-  I, x, y: Integer;
+  I: Integer;
   T: TResourceStream;
-  newGameObject: TBerryBush;
 begin
 
   paused := 1;
