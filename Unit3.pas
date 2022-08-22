@@ -705,18 +705,21 @@ begin
         and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight)
           = playerQuadY)) then begin
 
-      if (gameObjects[I].objectType <> 'brick') then
-        break;
+      if (gameObjects[I].objectType = 'brick') then begin
 
-      // writeln((ABS((playerY+32) - gameObjects[I].Y*32)));
-      // if ((ABS((playerX) - gameObjects[I].x*32) <= 32) and (ABS((playerY) - gameObjects[I].Y*32) <= 16)) then begin
-      // writeln(ABS(playerX - gameObjects[I].x*32));
-      if ((ABS(PlayerX + (playerQuadX * 40 * 32) + 16 - gameObjects[I].x * 32)
+        if ((ABS(PlayerX + (playerQuadX * 40 * 32) + 16 - gameObjects[I].x * 32)
             <= 20) and (ABS(PlayerY + (playerQuadY * 20 * 32)
               + 16 - gameObjects[I].y * 32) <= 20)) then begin
 
         PlayerX := PrevX;
         PlayerY := PrevY;
+
+      end;
+
+      // writeln((ABS((playerY+32) - gameObjects[I].Y*32)));
+      // if ((ABS((playerX) - gameObjects[I].x*32) <= 32) and (ABS((playerY) - gameObjects[I].Y*32) <= 16)) then begin
+      // writeln(ABS(playerX - gameObjects[I].x*32));
+
 
       end;
 
