@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, pngimage, ExtCtrls, jpeg, Math, Sockets, DateUtils, StdCtrls,
+  Dialogs, pngimage, ExtCtrls, jpeg, Math, Sockets, DateUtils, StdCtrls, superobject,
   gameObjectManagement;
 
 type
@@ -26,6 +26,8 @@ type
     LevelImage: TImage;
     FpsReset: TTimer;
     cachedLevel: TImage;
+    TcpClient1: TTcpClient;
+    Timer1: TTimer;
     procedure ApplicationMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -37,6 +39,10 @@ type
     procedure Image1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; x, y: Integer);
     procedure Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; x, y: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure TcpClient1Receive(Sender: TObject; Buf: PAnsiChar;
+      var DataLen: Integer);
+    procedure TcpClient1Error(Sender: TObject; SocketError: Integer);
+    procedure Timer1Timer(Sender: TObject);
   private
     { Private declarations }
   public
@@ -154,7 +160,7 @@ function deletePlayer(id: String): Boolean;
 var
   PlayerIndex: Integer;
   ALength: Cardinal;
-  i: Cardinal;
+  I: Cardinal;
 begin
 
   PlayerIndex := getPlayerIndex(id);
@@ -289,7 +295,7 @@ procedure setCaption();
 begin
   Form3.Caption := 'FPS: ' + inttostr(CURRENTFPS) + ' X: ' + inttostr(PlayerX) + ' Y: ' + inttostr(PlayerY) + ' ActualX: ' + inttostr(PlayerActualX + PlayerX)
     + ' ActualY: ' + inttostr(PlayerActualY + PlayerY) + ' Quad: (' + inttostr(playerQuadX) + ';' + inttostr(playerQuadY) + ')' + ' Seed: ' + inttostr
-    (seedFromQuad) + ' GQ: ' + inttostr(Length(generatedQuadrents));
+    (seedFromQuad) + ' GQ: ' + inttostr(Length(generatedQuadrents)) +' '+ BoolToStr(form3.tcpclient1.Active);
 end;
 
 procedure placeGround();
@@ -425,6 +431,8 @@ begin
 
   AllocConsole;
 
+  TcpClient1.Active := True;
+
   loadGame;
 
   oldWindowX := Form3.Left;
@@ -510,6 +518,8 @@ begin
 
   updateLevelCache;
 
+  //addPlayer(100, 100, 'Test')
+
 end;
 
 procedure TForm3.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -553,6 +563,34 @@ begin
   FPS := 0;
 end;
 
+procedure tryMove(x, y: Integer);
+var
+  I: Integer;
+begin
+  PlayerX := PlayerX + x;
+  PlayerY := PlayerY + y;
+
+  for I := 0 to Length(gameObjects) - 1 do begin
+    if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX) and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight) = playerQuadY)) then
+      begin
+
+      if (gameObjects[I].objectType = 'brick') then begin
+
+        if ((ABS(PlayerX + (playerQuadX * 40 * 32) + 16 - gameObjects[I].x * 32) <= 20) and
+            (ABS(PlayerY + (playerQuadY * 20 * 32) + 16 - gameObjects[I].y * 32) <= 20)) then begin
+
+          PlayerX := PlayerX - x;
+          PlayerY := PlayerY - y;
+
+        end;
+
+      end;
+
+    end;
+  end;
+
+end;
+
 procedure TForm3.gameLoopTimer(Sender: TObject);
 var
   pt: tPoint;
@@ -566,38 +604,17 @@ begin
 
   speed := 4;
 
-  if forwardKey then begin
-    PlayerY := PlayerY - speed;
+  if forwardKey then
+    tryMove(0, -speed);
 
-    if rightKey then begin
-      PlayerX := PlayerX - round(speed / 2);
-      PlayerY := PlayerY + round(speed / 2);
-    end
-    else if leftKey then begin
-      PlayerX := PlayerX + round(speed / 2);
-      PlayerY := PlayerY + round(speed / 2);
-    end;
+  if backwardKey then
+    tryMove(0, speed);
 
-  end;
-  if backwardKey then begin
-    PlayerY := PlayerY + speed;
+  if leftKey then
+    tryMove(-speed, 0);
 
-    if rightKey then begin
-      PlayerX := PlayerX - round(speed / 2);
-      PlayerY := PlayerY - round(speed / 2);
-    end
-    else if leftKey then begin
-      PlayerX := PlayerX + round(speed / 2);
-      PlayerY := PlayerY - round(speed / 2);
-    end;
-
-  end;
-  if leftKey then begin
-    PlayerX := PlayerX - speed;
-  end;
-  if rightKey then begin
-    PlayerX := PlayerX + speed;
-  end;
+  if rightKey then
+    tryMove(speed, 0);
 
   // Player Enter Top of screen
   if PlayerY < -32 then begin
@@ -637,7 +654,19 @@ begin
   Form3.Image1.canvas.Draw(0, 0, objectBitmapCache);
 
   Form3.Image1.canvas.Draw(PlayerX + 16, PlayerY + 16, playerImage);
-  Form3.Image1.canvas.Draw(PlayerX + 16, PlayerY + 36, playerImage2);
+  for I := 0 to Length(players) - 1 do begin
+    if ((Math.Floor(players[I].x/ (40 * 32)) = playerQuadX) and (Math.Floor(players[I].y/ (20 * 32)) = playerQuadY)) then begin
+      Form3.Image1.canvas.Draw(players[I].x-playerQuadX * 40 * 32, players[I].y-playerQuadY * 20 * 32, playerImage2);
+    end
+    else begin
+      with Form3.Image1 do begin
+        Canvas.Pen.Color := clGreen;
+        Canvas.Pen.Width := 1;
+        Canvas.MoveTo(players[I].x-playerQuadX * 40 * 32, players[I].y-playerQuadY * 20 * 32);
+        Canvas.LineTo(PlayerX+32,PlayerY+32);
+      end;
+    end;
+  end;
 
   placeGround();
 
@@ -672,26 +701,6 @@ begin
   end;
 
 
-
-  // COLLISON STUFFS
-
-  for I := 0 to Length(gameObjects) - 1 do begin
-    if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX) and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight) = playerQuadY)) then
-      begin
-
-      if (gameObjects[I].objectType = 'brick') then begin
-
-        if ((ABS(PlayerX + (playerQuadX * 40 * 32) + 16 - gameObjects[I].x * 32) <= 20) and
-            (ABS(PlayerY + (playerQuadY * 20 * 32) + 16 - gameObjects[I].y * 32) <= 20)) then begin
-
-          PlayerX := PrevX;
-          PlayerY := PrevY;
-
-        end;
-      end;
-
-    end;
-  end;
   Form3.Image1.canvas.Draw(Form3.ClientWidth - 32, round(Form3.ClientHeight / 2) - 5 * 32, getTexture('Toolbar'));
 
   Form3.Image1.canvas.Draw(Form3.ClientWidth - 26, (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * SelectedSlot), selectedSlotImage);
@@ -702,6 +711,11 @@ begin
         (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I) + 18), gameObjectTextures[I + 1]);
 
   end;
+
+  TcpClient1.Receiveln;
+
+  //Need to change how often this updates later to something reasonable lol
+
 
   setCaption();
 
@@ -773,6 +787,91 @@ begin
   gameLoop.enabled := False;
   FpsReset.enabled := False;
   Form3.Image1.canvas.Draw(0, 0, pauseScreen);
+end;
+
+procedure TForm3.TcpClient1Error(Sender: TObject; SocketError: Integer);
+begin
+if (socketError <> 10035) then
+writeln(SocketError);
+end;
+
+function lerp(start, endN, amt: Real): Real;
+begin
+  Result := (1-amt)*start+amt*endN;
+end;
+
+procedure TForm3.TcpClient1Receive(Sender: TObject; Buf: PAnsiChar;
+  var DataLen: Integer);
+  var data, recieveString, outString, event: String;
+  var I : Integer;
+  serverPlayers : ISuperArray;
+  X: ISuperObject;
+begin
+data := Buf;
+outString := '';
+
+if (data[Length(data)] = ';') then begin
+outString := recieveString+data;
+
+while (POS(';',outString) <> 0) do begin
+  writeln(Copy(outString, 0, POS(';',outString)-1));
+
+  X := SO(Copy(outString, 0, POS(';',outString)-1));
+  event := x['event'].AsString;
+
+  if event = 'Ready' then begin
+    writeln('Connected to GameServer Successfully!');
+    TcpClient1.Sendln('{"event": "movement", "x": '+inttostr(PlayerX+PlayerActualX)+', "y": '+inttostr(PlayerY+PlayerActualY)+'};')
+  end else
+  if event = 'playersUpdate' then begin
+  serverPlayers := X['players'].AsArray;
+    for I := 0 to serverPlayers.Length-1 do begin
+      if (getPlayer(serverPlayers[I].O['id'].AsString) = nil) then begin
+      writeln('Creating Player: '+serverPlayers[I].O['id'].AsString);
+        addPlayer(serverPlayers[I].O['x'].AsInteger, serverPlayers[I].O['y'].AsInteger, serverPlayers[I].O['id'].AsString);
+      end;
+    end;
+
+    //for I := 0 to Length(players)-1 do begin
+    //writeln(players[i].id)
+//end;
+
+  end else
+  if event = 'movement' then begin
+
+for I := 0 to Length(players)-1 do begin
+ if players[i].id = X['id'].AsString then begin
+      players[i].x := round(lerp (players[i].x, X['x'].AsInteger, 0.1));
+      players[i].y := round(lerp (players[i].y, X['y'].AsInteger, 0.1));
+      // NEED TO LERP MORE OFTEN AND STORE THAN NEW VALUE SOMEHWERE< MAYBE IN THE TYPE
+    end;
+end;
+  end;
+
+
+  //end;
+
+    //if (getPlayerIndex(X['id'].AsString) <> -1) then begin
+    //writeln('Found Player: '+X['id'].AsString);
+    //getPlayer(X['id'].AsString).x := X['x'].AsInteger;
+    //getPlayer(X['id'].AsString).y := X['y'].AsInteger;
+
+  //end;
+
+
+  outString := Copy(outString, POS(';',outString)+1);
+  recieveString := '';
+end;
+
+
+
+
+end else recieveString := recieveString+data;
+end;
+
+procedure TForm3.Timer1Timer(Sender: TObject);
+begin
+TcpClient1.Sendln('{"event": "movement", "x": '+inttostr(PlayerX+PlayerActualX)+', "y": '+inttostr(PlayerY+PlayerActualY)+'};');
 end;
 
 procedure TForm3.unpauseGame;

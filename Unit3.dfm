@@ -54,4 +54,19 @@ object Form3: TForm3
     Left = 184
     Top = 168
   end
+  object TcpClient1: TTcpClient
+    BlockMode = bmNonBlocking
+    RemoteHost = 'pixelboop.net'
+    RemotePort = '8080'
+    OnReceive = TcpClient1Receive
+    OnError = TcpClient1Error
+    Left = 184
+    Top = 96
+  end
+  object Timer1: TTimer
+    Interval = 100
+    OnTimer = Timer1Timer
+    Left = 760
+    Top = 336
+  end
 end
