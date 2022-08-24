@@ -60,12 +60,14 @@ var
   grassTileImages: array [1 .. 6] of TJPEGImage;
   SelectedSlot: Integer = 0;
 
-  bush, tree1, tree2, tree3, tree4, playerImage, playerImage2, darkImage, selectorImage, nopeSelectorImage, heartImage, toolbarImage, selectedSlotImage,
+  bush, tree1, tree2, tree3, tree4, playerImage, playerImage2, connectionImage, no_connectionImage, darkImage, selectorImage, nopeSelectorImage, heartImage, toolbarImage, selectedSlotImage,
     pauseScreen: TGraphic;
 
   PlayerX, PlayerActualX, PlayerY, PlayerActualY, oldWindowX, oldWindowY, playerQuadX, playerQuadY, CURRENTFPS, FPS, cursorGridX, cursorGridY, paused: Integer;
 
   objectBitmapCache: TBitmap;
+
+  connection: Boolean;
 
   Distance: Real;
   Seed: Integer = 69420;
@@ -76,11 +78,11 @@ var
   recieveString, outString: String;
 
 const
-  gameTextureNames: array [1 .. 9] of string = ('missing', 'selectedSlot', 'Toolbar', 'pause_screen', 'man_01', 'PngImage_1', 'PngImage_18', 'PngImage_17',
-    'man_01_green');
+  gameTextureNames: array [1 .. 11] of string = ('missing', 'selectedSlot', 'Toolbar', 'pause_screen', 'man_01', 'PngImage_1', 'PngImage_18', 'PngImage_17',
+    'man_01_green', 'connection', 'no_connection');
 
 var
-  gameTextures: array [1 .. 9] of TGraphic;
+  gameTextures: array [1 .. 11] of TGraphic;
   growthStageTextureNames: array [1 .. 4] of string = (
     'empty_berry_bush',
     '1_third_berry_bush',
@@ -433,6 +435,8 @@ begin
 
   AllocConsole;
 
+  connection := True;
+
   TcpClient1.Active := True;
 
   loadGame;
@@ -493,6 +497,8 @@ begin
   end;
 
   playerImage := getTexture('man_01');
+  connectionImage := getTexture('connection');
+  no_connectionImage := getTexture('no_connection');
   playerImage2 := getTexture('man_01_green');
 
   darkImage := getTexture('dark_square');
@@ -721,14 +727,32 @@ begin
 
   Form3.Image1.canvas.Draw(Form3.ClientWidth - 26, (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * SelectedSlot), selectedSlotImage);
 
-  (*
+
   for I := 0 to 2 do begin
 
     Form3.Image1.canvas.StretchDraw(Rect(Form3.ClientWidth - 25, (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I), Form3.ClientWidth - 26 + 18,
         (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I) + 18), gameObjectTextures[I + 1]);
 
   end;
-  *)
+
+  Form3.Image1.Canvas.Brush.Style:=bsClear;
+    Form3.Image1.Canvas.Font.Style := [fsItalic];
+
+  if connection = True then begin
+  Form3.Image1.Canvas.Font.Color:=clWhite;
+    Form3.Image1.Canvas.Draw(Form3.ClientWidth-16-(5), 0+(5), connectionImage);
+    Form3.Image1.Canvas.TextOut(Form3.ClientWidth-16-(141), 6, 'Connected to gameserver!');
+  end
+  else begin
+  Form3.Image1.Canvas.Font.Color:=clYellow;
+    Form3.Image1.Canvas.Draw(Form3.ClientWidth-16-(5), 0+(5), no_connectionImage);
+    Form3.Image1.Canvas.TextOut(Form3.ClientWidth-16-(81), 6, 'No Connection');
+  end;
+
+
+
+
+
 
   TcpClient1.Receiveln;
 
@@ -810,6 +834,9 @@ procedure TForm3.reconnectTimerTimer(Sender: TObject);
 begin
 TcpClient1.Disconnect;
 TcpClient1.Connect;
+reconnectTimer.Enabled := False;
+writeln('Attempting to reconnect!');
+connection := True;
 end;
 
 procedure TForm3.TcpClient1Connect(Sender: TObject);
@@ -819,7 +846,12 @@ end;
 
 procedure TForm3.TcpClient1Error(Sender: TObject; SocketError: Integer);
 begin
-  if (SocketError <> 10035) then
+
+  if ((socketError = 10057) or (socketError = 10054)) then begin
+  connection := False;
+    reconnectTimer.Enabled := True;
+  end
+  else if (SocketError <> 10035) then
     writeln(SocketError);
 end;
 

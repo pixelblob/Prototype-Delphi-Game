@@ -711,6 +711,14 @@
 				<ResourceType>RCData</ResourceType>
 				<ResourceId>man_01_green</ResourceId>
 			</RcItem>
+			<RcItem Include="images\no_connection.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>no_connection</ResourceId>
+			</RcItem>
+			<RcItem Include="images\connection.png">
+				<ResourceType>RCData</ResourceType>
+				<ResourceId>connection</ResourceId>
+			</RcItem>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

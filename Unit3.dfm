@@ -71,6 +71,7 @@ object Form3: TForm3
     Top = 336
   end
   object reconnectTimer: TTimer
+    Enabled = False
     OnTimer = reconnectTimerTimer
     Left = 472
     Top = 136
