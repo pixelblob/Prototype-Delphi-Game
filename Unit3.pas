@@ -63,7 +63,7 @@ var
   bush, tree1, tree2, tree3, tree4, playerImage, playerImage2, connectionImage, no_connectionImage, darkImage, selectorImage, nopeSelectorImage, heartImage, toolbarImage, selectedSlotImage,
     pauseScreen: TGraphic;
 
-  PlayerX, PlayerActualX, PlayerY, PlayerActualY, oldWindowX, oldWindowY, playerQuadX, playerQuadY, CURRENTFPS, FPS, cursorGridX, cursorGridY, paused: Integer;
+  PlayerX, PlayerActualX, PlayerY, frame, PlayerActualY, oldWindowX, oldWindowY, playerQuadX, playerQuadY, CURRENTFPS, FPS, cursorGridX, cursorGridY, paused: Integer;
 
   objectBitmapCache: TBitmap;
 
@@ -228,7 +228,7 @@ var
   Asc: Integer;
 begin
 
-  Asc := round((Sin(playerQuadX) + tan(playerQuadY)) * 1000);
+  Asc := round((Sin(playerQuadX) + tan(playerQuadY)) * 1000)+Seed;
   // writeln('Seed: ' + inttostr(Asc));
   Result := Asc;
 
@@ -436,6 +436,7 @@ begin
   AllocConsole;
 
   connection := True;
+  frame := 0;
 
   TcpClient1.Active := True;
 
@@ -607,8 +608,9 @@ end;
 procedure TForm3.gameLoopTimer(Sender: TObject);
 var
   pt: tPoint;
+  Bmp: TBitmap;
 var
-  I, speed: Integer;
+  I, speed, x, y: Integer;
   PrevX, PrevY: Integer;
 begin
 
@@ -716,6 +718,24 @@ begin
   cursorGridX := round((pt.x - 16) / 32);
   cursorGridY := round((pt.y - 16) / 32);
 
+  Bmp := TBitmap.Create;
+  bmp.Canvas.Brush.Color := clBlack;
+
+  Bmp.Width := 32;
+  Bmp.Height := 32;
+
+  //writeln(); // 0 - 1  125 * range
+
+
+  for X := 0 to 40 do                 //sqrt(sqr(x*32-playerX-16)+sqr(y*32-playery-16))
+    for Y := 0 to 20 do
+      Form3.Image1.Canvas.Draw(x*32, y*32, bmp, Max(0, min(round((sqrt(sqr(x*32-cursorGridX*32-16)+sqr(y*32-cursorGridY*32-16))/2)),round(125*((sin(frame/1000)+1)/2))))+
+        Max(0, min(round((sqrt(sqr(x*32-playerX-16)+sqr(y*32-playerY-16))/2)),round(125*((sin(frame/1000)+1)/2)))));
+
+
+
+  bmp.Free;
+
   if gameObjectManagement.getGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20) <> nil then begin
     Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32, nopeSelectorImage);
   end
@@ -757,6 +777,8 @@ begin
   TcpClient1.Receiveln;
 
   setCaption();
+
+  frame := frame +1;
 
   FPS := FPS + 1;
 
