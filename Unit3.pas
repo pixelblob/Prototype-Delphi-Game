@@ -14,7 +14,7 @@ type
 
 type
   TPlayer = class(TGameObject)
-    x, y: Integer;
+    x, currentX, y, currentY: Integer;
     id: String;
   end;
 
@@ -28,6 +28,7 @@ type
     cachedLevel: TImage;
     TcpClient1: TTcpClient;
     Timer1: TTimer;
+    reconnectTimer: TTimer;
     procedure ApplicationMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -39,10 +40,11 @@ type
     procedure Image1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; x, y: Integer);
     procedure Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; x, y: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure TcpClient1Receive(Sender: TObject; Buf: PAnsiChar;
-      var DataLen: Integer);
+    procedure TcpClient1Receive(Sender: TObject; Buf: PAnsiChar; var DataLen: Integer);
     procedure TcpClient1Error(Sender: TObject; SocketError: Integer);
     procedure Timer1Timer(Sender: TObject);
+    procedure reconnectTimerTimer(Sender: TObject);
+    procedure TcpClient1Connect(Sender: TObject);
   private
     { Private declarations }
   public
@@ -70,6 +72,8 @@ var
   berryBushObjects: array of TBerryBush;
   players: array of TPlayer;
   generatedQuadrents: array of Integer;
+
+  recieveString, outString: String;
 
 const
   gameTextureNames: array [1 .. 9] of string = ('missing', 'selectedSlot', 'Toolbar', 'pause_screen', 'man_01', 'PngImage_1', 'PngImage_18', 'PngImage_17',
@@ -113,7 +117,6 @@ implementation
 
 function getPlayer(id: String): TPlayer;
 var
-  Player: TPlayer;
   I: Integer;
 begin
 
@@ -129,7 +132,6 @@ end;
 
 function getPlayerIndex(id: String): Integer;
 var
-  Player: TPlayer;
   I: Integer;
 begin
 
@@ -295,7 +297,7 @@ procedure setCaption();
 begin
   Form3.Caption := 'FPS: ' + inttostr(CURRENTFPS) + ' X: ' + inttostr(PlayerX) + ' Y: ' + inttostr(PlayerY) + ' ActualX: ' + inttostr(PlayerActualX + PlayerX)
     + ' ActualY: ' + inttostr(PlayerActualY + PlayerY) + ' Quad: (' + inttostr(playerQuadX) + ';' + inttostr(playerQuadY) + ')' + ' Seed: ' + inttostr
-    (seedFromQuad) + ' GQ: ' + inttostr(Length(generatedQuadrents)) +' '+ BoolToStr(form3.tcpclient1.Active);
+    (seedFromQuad) + ' GQ: ' + inttostr(Length(generatedQuadrents)) + ' ' + BoolToStr(Form3.TcpClient1.Active);
 end;
 
 procedure placeGround();
@@ -405,8 +407,8 @@ begin
       I := I + 1;
       if I > 3 then begin
         I := 0;
-        addGameObject(x, y, objectType);
-        writeln('Loaded: ' + objectType + ' at x: ' + inttostr(x) + ' y: ' + inttostr(y));
+        // addGameObject(x, y, objectType);
+        // writeln('Loaded: ' + objectType + ' at x: ' + inttostr(x) + ' y: ' + inttostr(y));
       end;
 
     end;
@@ -518,7 +520,7 @@ begin
 
   updateLevelCache;
 
-  //addPlayer(100, 100, 'Test')
+  // addPlayer(100, 100, 'Test')
 
 end;
 
@@ -591,6 +593,11 @@ begin
 
 end;
 
+function lerp(start, endN, amt: Real): Real;
+begin
+  Result := (1 - amt) * start + amt * endN;
+end;
+
 procedure TForm3.gameLoopTimer(Sender: TObject);
 var
   pt: tPoint;
@@ -655,15 +662,19 @@ begin
 
   Form3.Image1.canvas.Draw(PlayerX + 16, PlayerY + 16, playerImage);
   for I := 0 to Length(players) - 1 do begin
-    if ((Math.Floor(players[I].x/ (40 * 32)) = playerQuadX) and (Math.Floor(players[I].y/ (20 * 32)) = playerQuadY)) then begin
-      Form3.Image1.canvas.Draw(players[I].x-playerQuadX * 40 * 32, players[I].y-playerQuadY * 20 * 32, playerImage2);
+
+    players[I].x := round(lerp(players[I].currentX, players[I].x, 0.92));
+    players[I].y := round(lerp(players[I].currentY, players[I].y,0.92));
+
+    if ((Math.Floor(players[I].x / (40 * 32)) = playerQuadX) and (Math.Floor(players[I].y / (20 * 32)) = playerQuadY)) then begin
+      Form3.Image1.canvas.Draw(players[I].x - playerQuadX * 40 * 32, players[I].y - playerQuadY * 20 * 32, playerImage2);
     end
     else begin
       with Form3.Image1 do begin
-        Canvas.Pen.Color := clGreen;
-        Canvas.Pen.Width := 1;
-        Canvas.MoveTo(players[I].x-playerQuadX * 40 * 32, players[I].y-playerQuadY * 20 * 32);
-        Canvas.LineTo(PlayerX+32,PlayerY+32);
+        canvas.pen.color := clGreen;
+        canvas.pen.width := 1;
+        canvas.MoveTo(players[I].x - playerQuadX * 40 * 32, players[I].y - playerQuadY * 20 * 32);
+        canvas.LineTo(PlayerX + 32, PlayerY + 32);
       end;
     end;
   end;
@@ -677,6 +688,10 @@ begin
     if ((cursorGridX <> round((pt.x - 16) / 32)) or (cursorGridY <> round((pt.y - 16) / 32))) then begin
       if isLeftMouseDown then begin
         writeln('DRAG-PLACE');
+
+        addServerObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20, 'brick');
+        addServerObject(round((pt.x - 16) / 32) + playerQuadX * 40, round((pt.y - 16) / 32) + playerQuadY * 20, gameObjectTypes[SelectedSlot + 1]);
+
         addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20, 'brick');
         addGameObject(round((pt.x - 16) / 32) + playerQuadX * 40, round((pt.y - 16) / 32) + playerQuadY * 20, gameObjectTypes[SelectedSlot + 1]);
         updateLevelCache;
@@ -684,7 +699,9 @@ begin
       else begin
         writeln('DRAG-DELETE');
         removeGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
+        destroyServerObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
         removeGameObject(round((pt.x - 16) / 32) + playerQuadX * 40, round((pt.y - 16) / 32) + playerQuadY * 20);
+        destroyServerObject(round((pt.x - 16) / 32) + playerQuadX * 40, round((pt.y - 16) / 32) + playerQuadY * 20);
         updateLevelCache;
       end;
     end;
@@ -700,22 +717,20 @@ begin
     Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32, selectorImage);
   end;
 
-
   Form3.Image1.canvas.Draw(Form3.ClientWidth - 32, round(Form3.ClientHeight / 2) - 5 * 32, getTexture('Toolbar'));
 
   Form3.Image1.canvas.Draw(Form3.ClientWidth - 26, (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * SelectedSlot), selectedSlotImage);
 
+  (*
   for I := 0 to 2 do begin
 
     Form3.Image1.canvas.StretchDraw(Rect(Form3.ClientWidth - 25, (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I), Form3.ClientWidth - 26 + 18,
         (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I) + 18), gameObjectTextures[I + 1]);
 
   end;
+  *)
 
   TcpClient1.Receiveln;
-
-  //Need to change how often this updates later to something reasonable lol
-
 
   setCaption();
 
@@ -757,6 +772,7 @@ begin
       end
       else begin
         writeln('PLACE');
+        addServerObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20, gameObjectTypes[SelectedSlot + 1]);
         addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20, gameObjectTypes[SelectedSlot + 1]);
       end;
       updateLevelCache;
@@ -764,6 +780,7 @@ begin
     else begin
       writeln('DELETE');
       removeGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
+      destroyServerObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
       updateLevelCache;
     end;
 
@@ -789,89 +806,100 @@ begin
   Form3.Image1.canvas.Draw(0, 0, pauseScreen);
 end;
 
+procedure TForm3.reconnectTimerTimer(Sender: TObject);
+begin
+TcpClient1.Disconnect;
+TcpClient1.Connect;
+end;
+
+procedure TForm3.TcpClient1Connect(Sender: TObject);
+begin
+writeln('CLIENT HAS CONNECTED');
+end;
+
 procedure TForm3.TcpClient1Error(Sender: TObject; SocketError: Integer);
 begin
-if (socketError <> 10035) then
-writeln(SocketError);
+  if (SocketError <> 10035) then
+    writeln(SocketError);
 end;
 
-function lerp(start, endN, amt: Real): Real;
+procedure TForm3.TcpClient1Receive(Sender: TObject; Buf: PAnsiChar; var DataLen: Integer);
+var
+  data, event: String;
+var
+  I: Integer;
+  serverPlayers: ISuperArray;
+  x: ISuperObject;
 begin
-  Result := (1-amt)*start+amt*endN;
-end;
+  data := Buf;
 
-procedure TForm3.TcpClient1Receive(Sender: TObject; Buf: PAnsiChar;
-  var DataLen: Integer);
-  var data, recieveString, outString, event: String;
-  var I : Integer;
-  serverPlayers : ISuperArray;
-  X: ISuperObject;
-begin
-data := Buf;
-outString := '';
+  if (data[Length(data)] = ';') then begin
+    outString := recieveString + data;
 
-if (data[Length(data)] = ';') then begin
-outString := recieveString+data;
+    while (POS(';', outString) <> 0) do begin
+      writeln('Recieved Full String: '+Copy(outString, 0, POS(';', outString)));
 
-while (POS(';',outString) <> 0) do begin
-  writeln(Copy(outString, 0, POS(';',outString)-1));
 
-  X := SO(Copy(outString, 0, POS(';',outString)-1));
-  event := x['event'].AsString;
+            x := SO(Copy(outString, 0, POS(';', outString) - 1));
+      event := x['event'].AsString;
 
-  if event = 'Ready' then begin
-    writeln('Connected to GameServer Successfully!');
-    TcpClient1.Sendln('{"event": "movement", "x": '+inttostr(PlayerX+PlayerActualX)+', "y": '+inttostr(PlayerY+PlayerActualY)+'};')
-  end else
-  if event = 'playersUpdate' then begin
-  serverPlayers := X['players'].AsArray;
-    for I := 0 to serverPlayers.Length-1 do begin
-      if (getPlayer(serverPlayers[I].O['id'].AsString) = nil) then begin
-      writeln('Creating Player: '+serverPlayers[I].O['id'].AsString);
-        addPlayer(serverPlayers[I].O['x'].AsInteger, serverPlayers[I].O['y'].AsInteger, serverPlayers[I].O['id'].AsString);
+      if event = 'Ready' then begin
+        writeln('Connected to GameServer Successfully!');
+        TcpClient1.Sendln('{"event": "movement", "x": ' + inttostr(PlayerX + PlayerActualX) + ', "y": ' + inttostr(PlayerY + PlayerActualY) + '};')
+      end
+      else if event = 'playersUpdate' then begin
+        serverPlayers := x['players'].AsArray;
+        for I := 0 to serverPlayers.Length - 1 do begin
+          if (getPlayer(serverPlayers[I].O['id'].AsString) = nil) then begin
+            writeln('Creating Player: ' + serverPlayers[I].O['id'].AsString);
+            addPlayer(serverPlayers[I].O['x'].AsInteger, serverPlayers[I].O['y'].AsInteger, serverPlayers[I].O['id'].AsString);
+          end;
+        end;
+      end
+      else if event = 'updateGameObjects' then begin
+
+        SetLength(gameObjects, 0);
+
+        for I := 0 to x['gameObjects'].AsArray.Length - 1 do begin
+          addGameObject(x['gameObjects'].AsArray[I].O['x'].AsInteger, x['gameObjects'].AsArray[I].O['y'].AsInteger,
+            x['gameObjects'].AsArray[I].O['objectType'].AsString);
+        end;
+        updateLevelCache;
+      end
+
+      else if event = 'movement' then begin
+
+        for I := 0 to Length(players) - 1 do begin
+          if players[I].id = x['id'].AsString then begin
+            players[I].currentX := x['x'].AsInteger;
+            players[I].currentY := x['y'].AsInteger;
+          end;
+        end;
+      end
+      else if event = 'modifyServerObject' then begin
+        if (x['method'].AsString = 'create') then begin
+          addGameObject(x['x'].AsInteger, x['y'].AsInteger, x['objectType'].AsString);
+          updateLevelCache;
+        end;
+        if (x['method'].AsString = 'destroy') then begin
+          removeGameObject(x['x'].AsInteger, x['y'].AsInteger);
+          updateLevelCache;
+        end;
       end;
+
+
+      outString := Copy(outString, POS(';', outString) + 1);
     end;
+    recieveString := '';
 
-    //for I := 0 to Length(players)-1 do begin
-    //writeln(players[i].id)
-//end;
-
-  end else
-  if event = 'movement' then begin
-
-for I := 0 to Length(players)-1 do begin
- if players[i].id = X['id'].AsString then begin
-      players[i].x := round(lerp (players[i].x, X['x'].AsInteger, 0.1));
-      players[i].y := round(lerp (players[i].y, X['y'].AsInteger, 0.1));
-      // NEED TO LERP MORE OFTEN AND STORE THAN NEW VALUE SOMEHWERE< MAYBE IN THE TYPE
-    end;
-end;
-  end;
-
-
-  //end;
-
-    //if (getPlayerIndex(X['id'].AsString) <> -1) then begin
-    //writeln('Found Player: '+X['id'].AsString);
-    //getPlayer(X['id'].AsString).x := X['x'].AsInteger;
-    //getPlayer(X['id'].AsString).y := X['y'].AsInteger;
-
-  //end;
-
-
-  outString := Copy(outString, POS(';',outString)+1);
-  recieveString := '';
-end;
-
-
-
-
-end else recieveString := recieveString+data;
+  end
+  else
+    recieveString := recieveString + data;
 end;
 
 procedure TForm3.Timer1Timer(Sender: TObject);
 begin
-TcpClient1.Sendln('{"event": "movement", "x": '+inttostr(PlayerX+PlayerActualX)+', "y": '+inttostr(PlayerY+PlayerActualY)+'};');
+  TcpClient1.Sendln('{"event": "movement", "x": ' + inttostr(PlayerX + PlayerActualX) + ', "y": ' + inttostr(PlayerY + PlayerActualY) + '};');
 end;
 
 procedure TForm3.unpauseGame;

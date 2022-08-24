@@ -58,6 +58,7 @@ object Form3: TForm3
     BlockMode = bmNonBlocking
     RemoteHost = 'pixelboop.net'
     RemotePort = '8080'
+    OnConnect = TcpClient1Connect
     OnReceive = TcpClient1Receive
     OnError = TcpClient1Error
     Left = 184
@@ -68,5 +69,10 @@ object Form3: TForm3
     OnTimer = Timer1Timer
     Left = 760
     Top = 336
+  end
+  object reconnectTimer: TTimer
+    OnTimer = reconnectTimerTimer
+    Left = 472
+    Top = 136
   end
 end

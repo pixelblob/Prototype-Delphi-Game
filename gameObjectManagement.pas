@@ -12,10 +12,12 @@ type
 
 procedure removeGameObject(x, y: Integer);
 procedure addGameObject(x, y: Integer; objectType: String);
+procedure addServerObject(x, y: Integer; objectType: String);
+procedure destroyServerObject(x, y: Integer);
 function getGameObject(x, y: Integer): TGameObject;
 
 implementation
-uses Unit3;
+uses Unit3, superobject;
 
 function getGameObject(x, y: Integer): TGameObject;
 var
@@ -46,14 +48,51 @@ begin
     if ((gameObjects[I].x = x) and (gameObjects[I].y = y)) then BEGIN
 
       ALength := Length(gameObjects);
-      Assert(ALength > 0);
-      Assert(I < ALength);
       for Iv := I + 1 to ALength - 1 do
         gameObjects[Iv - 1] := gameObjects[Iv];
-      SetLength(gameObjects, ALength - 1);
+        SetLength(gameObjects, ALength - 1);
 
     END;
   end;
+
+end;
+
+procedure destroyServerObject(x, y: Integer);
+var
+  newGameObject: TGameObject;
+  objectExistsAlready: Boolean;
+  I: Integer;
+  Xobject: ISuperObject;
+begin
+ Xobject := TSuperObject.Create;
+
+ //Xobject.V['gameObjects'] := objectArray;
+ Xobject.V['event'] := 'modifyServerObject';
+ Xobject.V['method'] := 'destroy'; //Allowed methods are create, destroy and modify
+ Xobject.V['x'] := x;
+ Xobject.V['y'] := y;
+
+ Form3.TcpClient1.Sendln(Xobject.AsString+';')
+
+end;
+
+procedure addServerObject(x, y: Integer; objectType: String);
+var
+  newGameObject: TGameObject;
+  objectExistsAlready: Boolean;
+  I: Integer;
+  Xobject: ISuperObject;
+begin
+ Xobject := TSuperObject.Create;
+
+ //Xobject.V['gameObjects'] := objectArray;
+ Xobject.V['event'] := 'modifyServerObject';
+ Xobject.V['method'] := 'create'; //Allowed methods are create, destroy and modify
+ Xobject.V['x'] := x;
+ Xobject.V['y'] := y;
+ Xobject.V['objectType'] := objectType;
+
+ Form3.TcpClient1.Sendln(Xobject.AsString+';')
 
 end;
 
