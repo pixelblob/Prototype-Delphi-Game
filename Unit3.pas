@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, pngimage, ExtCtrls, jpeg, Math, Sockets, DateUtils, StdCtrls, superobject,
+  Dialogs, pngimage, ExtCtrls, jpeg, Math, Sockets, DateUtils, StdCtrls,
+  superobject,
   gameObjectManagement;
 
 type
@@ -37,10 +38,13 @@ type
     procedure FpsResetTimer(Sender: TObject);
     procedure pauseGame();
     procedure unpauseGame();
-    procedure Image1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; x, y: Integer);
-    procedure Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; x, y: Integer);
+    procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; x, y: Integer);
+    procedure Image1MouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; x, y: Integer);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure TcpClient1Receive(Sender: TObject; Buf: PAnsiChar; var DataLen: Integer);
+    procedure TcpClient1Receive(Sender: TObject; Buf: PAnsiChar;
+      var DataLen: Integer);
     procedure TcpClient1Error(Sender: TObject; SocketError: Integer);
     procedure Timer1Timer(Sender: TObject);
     procedure reconnectTimerTimer(Sender: TObject);
@@ -55,15 +59,19 @@ var
   Form3: TForm3;
   jpg: TJPEGImage;
   png: TGraphic;
-  forwardKey, backwardKey, leftKey, rightKey, isMouseDown, isLeftMouseDown: Boolean;
+  forwardKey, backwardKey, leftKey, rightKey, isMouseDown,
+    isLeftMouseDown: Boolean;
 
   grassTileImages: array [1 .. 6] of TJPEGImage;
   SelectedSlot: Integer = 0;
 
-  bush, tree1, tree2, tree3, tree4, playerImage, playerImage2, connectionImage, no_connectionImage, darkImage, selectorImage, nopeSelectorImage, heartImage, toolbarImage, selectedSlotImage,
-    pauseScreen: TGraphic;
+  bush, tree1, tree2, tree3, tree4, playerImage, playerImage2, connectionImage,
+    no_connectionImage, darkImage, selectorImage, nopeSelectorImage,
+    heartImage, toolbarImage, selectedSlotImage, pauseScreen: TGraphic;
 
-  PlayerX, PlayerActualX, PlayerY, frame, PlayerActualY, oldWindowX, oldWindowY, playerQuadX, playerQuadY, CURRENTFPS, FPS, cursorGridX, cursorGridY, paused: Integer;
+  PlayerX, PlayerActualX, PlayerY, frame, PlayerActualY, oldWindowX,
+    oldWindowY, playerQuadX, playerQuadY, CURRENTFPS, FPS, cursorGridX,
+    cursorGridY, health, paused: Integer;
 
   objectBitmapCache: TBitmap;
 
@@ -78,8 +86,9 @@ var
   recieveString, outString: String;
 
 const
-  gameTextureNames: array [1 .. 11] of string = ('missing', 'selectedSlot', 'Toolbar', 'pause_screen', 'man_01', 'PngImage_1', 'PngImage_18', 'PngImage_17',
-    'man_01_green', 'connection', 'no_connection');
+  gameTextureNames: array [1 .. 11] of string = ('missing', 'selectedSlot',
+    'Toolbar', 'pause_screen', 'man_01', 'PngImage_1', 'PngImage_18',
+    'PngImage_17', 'man_01_green', 'connection', 'no_connection');
 
 var
   gameTextures: array [1 .. 11] of TGraphic;
@@ -117,13 +126,40 @@ implementation
 
 {$R *.dfm}
 
+procedure addHealth();
+begin
+  if health < 5 then
+    health := health + 1;
+end;
+
+procedure removeHealth();
+begin
+  if health > 1 then
+    health := health - 1
+  else
+  begin
+    PlayerX := 0;
+    PlayerY := 0;
+
+    PlayerActualX := 0;
+    PlayerActualY := 0;
+
+    playerQuadX := 0;
+    playerQuadY := 0;
+    
+    health := 5;
+  end;
+end;
+
 function getPlayer(id: String): TPlayer;
 var
   I: Integer;
 begin
 
-  for I := 0 to Length(players) - 1 do begin
-    if players[I].id = id then begin
+  for I := 0 to Length(players) - 1 do
+  begin
+    if players[I].id = id then
+    begin
       Result := players[I];
       break;
     end;
@@ -137,8 +173,10 @@ var
   I: Integer;
 begin
 
-  for I := 0 to Length(players) - 1 do begin
-    if players[I].id = id then begin
+  for I := 0 to Length(players) - 1 do
+  begin
+    if players[I].id = id then
+    begin
       Result := I;
       break;
     end;
@@ -169,7 +207,8 @@ begin
 
   PlayerIndex := getPlayerIndex(id);
 
-  if PlayerIndex <> -1 then begin
+  if PlayerIndex <> -1 then
+  begin
 
     ALength := Length(players);
     for I := PlayerIndex + 1 to ALength - 1 do
@@ -190,17 +229,24 @@ var
   Message: TMessage;
 begin
   writeln(Msg.message);
-  if Msg.message = WM_MOUSEWHEEL then begin
+  if Msg.message = WM_MOUSEWHEEL then
+  begin
     Window := WindowFromPoint(Msg.pt);
-    if Window <> 0 then begin
+    if Window <> 0 then
+    begin
       WinControl := FindControl(Window);
-      if WinControl <> nil then begin
-        Control := WinControl.ControlAtPos(WinControl.ScreenToClient(Msg.pt), False);
-        if Control <> nil then begin
+      if WinControl <> nil then
+      begin
+        Control := WinControl.ControlAtPos(WinControl.ScreenToClient(Msg.pt),
+          False);
+        if Control <> nil then
+        begin
           Message.WParam := Msg.WParam;
           Message.LParam := Msg.LParam;
-          TCMMouseWheel(Message).ShiftState := KeysToShiftState(TWMMouseWheel(Message).Keys);
-          Message.Result := Control.Perform(CM_MOUSEWHEEL, Message.WParam, Message.LParam);
+          TCMMouseWheel(Message).ShiftState := KeysToShiftState
+            (TWMMouseWheel(Message).Keys);
+          Message.Result := Control.Perform(CM_MOUSEWHEEL, Message.WParam,
+              Message.LParam);
           Handled := Message.Result <> 0;
         end;
       end;
@@ -213,10 +259,12 @@ function getTexture(texture: String): TGraphic;
 var
   I: Integer;
 begin
-  // writeln('Requested Texture: '+texture);
+  // writeln('Requested Texture: '+texture); 
   Result := gameTextures[1];
-  for I := 1 to Length(gameTextureNames) do begin
-    if (gameTextureNames[I] = texture) then begin
+  for I := 1 to Length(gameTextureNames) do
+  begin
+    if (gameTextureNames[I] = texture) then
+    begin
       Result := gameTextures[I];
       break;
     end;
@@ -228,8 +276,8 @@ var
   Asc: Integer;
 begin
 
-  Asc := round((Sin(playerQuadX) + tan(playerQuadY)) * 1000)+Seed;
-  // writeln('Seed: ' + inttostr(Asc));
+  Asc := round((Sin(playerQuadX) + tan(playerQuadY)) * 1000) + Seed;
+  // writeln('Seed: ' + inttostr(Asc)); 
   Result := Asc;
 
 end;
@@ -241,27 +289,41 @@ begin
 
   Form3.cachedLevel.canvas.pen.color := clwhite;
   Form3.cachedLevel.canvas.brush.color := clwhite;
-  Form3.cachedLevel.canvas.rectangle(0, 0, Form3.cachedLevel.width, Form3.cachedLevel.height);
+  Form3.cachedLevel.canvas.rectangle(0, 0, Form3.cachedLevel.width,
+    Form3.cachedLevel.height);
 
-  for I := 0 to Length(gameObjects) - 1 do begin
-    if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX) and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight) = playerQuadY)) then
-      begin
+  for I := 0 to Length(gameObjects) - 1 do
+  begin
+    if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX)
+        and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight)
+          = playerQuadY)) then
+    begin
       for R := 1 to Length(gameObjectTypes) do
-        if gameObjectTypes[R] = gameObjects[I].objectType then begin
+        if gameObjectTypes[R] = gameObjects[I].objectType then
+        begin
           objectIndex := R;
         end;
 
-      Form3.cachedLevel.canvas.Draw(gameObjects[I].x * 32 - playerQuadX * 32 * 40, gameObjects[I].y * 32 - playerQuadY * 32 * 20,
+      Form3.cachedLevel.canvas.Draw
+        (gameObjects[I].x * 32 - playerQuadX * 32 * 40,
+        gameObjects[I].y * 32 - playerQuadY * 32 * 20,
         gameObjectTextures[objectIndex]);
     end;
   end;
 
-  for I := 0 to Length(berryBushObjects) - 1 do begin
-    if ((Math.Floor(berryBushObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX) and (Math.Floor(berryBushObjects[I].y * 32 / Form3.ClientHeight)
-          = playerQuadY)) then begin
+  for I := 0 to Length(berryBushObjects) - 1 do
+  begin
+    if ((Math.Floor(berryBushObjects[I].x * 32 / Form3.ClientWidth)
+          = playerQuadX) and (Math.Floor
+          (berryBushObjects[I].y * 32 / Form3.ClientHeight) = playerQuadY))
+      then
+    begin
 
-      Form3.cachedLevel.canvas.Draw(berryBushObjects[I].x * 32 - playerQuadX * 32 * 40, berryBushObjects[I].y * 32 - playerQuadY * 32 * 20,
-        growthStageTextures[berryBushObjects[I].growthStage]);
+      Form3.cachedLevel.canvas.Draw
+        (berryBushObjects[I].x * 32 - playerQuadX * 32 * 40,
+        berryBushObjects[I].y * 32 - playerQuadY * 32 * 20,
+        growthStageTextures[berryBushObjects[I].growthStage]
+        );
     end;
   end;
 
@@ -272,7 +334,8 @@ begin
   objectBitmapCache.width := Form3.width;
   objectBitmapCache.height := Form3.height;
 
-  objectBitmapCache.canvas.CopyRect(objectBitmapCache.canvas.ClipRect, Form3.cachedLevel.canvas, Form3.cachedLevel.canvas.ClipRect);
+  objectBitmapCache.canvas.CopyRect(objectBitmapCache.canvas.ClipRect,
+    Form3.cachedLevel.canvas, Form3.cachedLevel.canvas.ClipRect);
 
   writeln('UPDATED LEVEL CACHE');
 end;
@@ -284,8 +347,10 @@ var
   occupied: Boolean;
 begin
   occupied := False;
-  for I := 0 to Length(berryBushObjects) - 1 do begin
-    if ((berryBushObjects[I].x = x) and (berryBushObjects[I].y = y)) then BEGIN
+  for I := 0 to Length(berryBushObjects) - 1 do
+  begin
+    if ((berryBushObjects[I].x = x) and (berryBushObjects[I].y = y)) then
+    BEGIN
       Result := berryBushObjects[I];
       occupied := True;
     END;
@@ -297,9 +362,13 @@ end;
 
 procedure setCaption();
 begin
-  Form3.Caption := 'FPS: ' + inttostr(CURRENTFPS) + ' X: ' + inttostr(PlayerX) + ' Y: ' + inttostr(PlayerY) + ' ActualX: ' + inttostr(PlayerActualX + PlayerX)
-    + ' ActualY: ' + inttostr(PlayerActualY + PlayerY) + ' Quad: (' + inttostr(playerQuadX) + ';' + inttostr(playerQuadY) + ')' + ' Seed: ' + inttostr
-    (seedFromQuad) + ' GQ: ' + inttostr(Length(generatedQuadrents)) + ' ' + BoolToStr(Form3.TcpClient1.Active);
+  Form3.Caption := 'FPS: ' + inttostr(CURRENTFPS) + ' X: ' + inttostr(PlayerX)
+    + ' Y: ' + inttostr(PlayerY) + ' ActualX: ' + inttostr
+    (PlayerActualX + PlayerX) + ' ActualY: ' + inttostr
+    (PlayerActualY + PlayerY) + ' Quad: (' + inttostr(playerQuadX)
+    + ';' + inttostr(playerQuadY) + ')' + ' Seed: ' + inttostr(seedFromQuad)
+    + ' GQ: ' + inttostr(Length(generatedQuadrents)) + ' ' + BoolToStr
+    (Form3.TcpClient1.Active);
 end;
 
 procedure placeGround();
@@ -313,11 +382,14 @@ begin
   Form3.LevelImage.Picture.Bitmap.width := Form3.Image1.width;
   Form3.LevelImage.Picture.Bitmap.height := Form3.Image1.height;
 
-  randseed := Math.Floor((PlayerActualX + PlayerX + 32) / Form3.ClientWidth) + Math.Floor((PlayerActualY + PlayerY + 32) / Form3.ClientHeight) + Seed;
+  randseed := Math.Floor((PlayerActualX + PlayerX + 32) / Form3.ClientWidth)
+    + Math.Floor((PlayerActualY + PlayerY + 32) / Form3.ClientHeight) + Seed;
 
-  for x := 0 to round(Form3.Image1.width / 32) do begin
+  for x := 0 to round(Form3.Image1.width / 32) do
+  begin
     for y := 0 to round(Form3.Image1.height / 32) do
-      Form3.LevelImage.canvas.Draw(x * 32, y * 32, grassTileImages[RandomRange(1, Length(grassTileImages))]);
+      Form3.LevelImage.canvas.Draw(x * 32, y * 32,
+        grassTileImages[RandomRange(1, Length(grassTileImages))]);
   end;
 
 end;
@@ -333,23 +405,27 @@ begin
   playerQuadX := Math.Floor(PlayerActualX / Form3.ClientWidth);
   playerQuadY := Math.Floor(PlayerActualY / Form3.ClientHeight);
 
-  for I := 1 to Length(generatedQuadrents) do begin
+  for I := 1 to Length(generatedQuadrents) do
+  begin
     writeln(generatedQuadrents[I]);
-    if (generatedQuadrents[I] = seedFromQuad) then begin
+    if (generatedQuadrents[I] = seedFromQuad) then
+    begin
       writeln('FOUND QUAD');
       quadGenerated := True;
 
     end;
   end;
 
-  if quadGenerated = False then begin
+  if quadGenerated = False then
+  begin
     writeln('GENERATING BERRYS');
     SetLength(generatedQuadrents, Length(generatedQuadrents) + 1);
     Seed := seedFromQuad;
     generatedQuadrents[ High(generatedQuadrents)] := Seed;
     randseed := Seed;
     writeln(Seed);
-    for I := 1 to Random(10) + 2 do begin
+    for I := 1 to Random(10) + 2 do
+    begin
       newGameObject := TBerryBush.create;
       newGameObject.x := Random(40) + playerQuadX * 40;
       newGameObject.y := Random(20) + playerQuadY * 20;
@@ -359,7 +435,8 @@ begin
     end;
   end
   else
-    writeln('Seed for quad has already been generated: ' + inttostr(generatedQuadrents[Length(generatedQuadrents)]));
+    writeln('Seed for quad has already been generated: ' + inttostr
+        (generatedQuadrents[Length(generatedQuadrents)]));
 
   updateLevelCache;
 end;
@@ -372,7 +449,8 @@ var
 begin
   AssignFile(saveGameFile, 'data.txt');
   Rewrite(saveGameFile);
-  for I := 0 to Length(gameObjects) - 1 do begin
+  for I := 0 to Length(gameObjects) - 1 do
+  begin
     writeln(saveGameFile, gameObjects[I].x);
     writeln(saveGameFile, gameObjects[I].y);
     writeln(saveGameFile, gameObjects[I].objectType);
@@ -388,13 +466,15 @@ var
   I, x, y: Integer;
   sLine, objectType: String;
 begin
-  if FileExists('data.txt') then begin
+  if FileExists('data.txt') then
+  begin
     AssignFile(saveGameFile, 'data.txt');
     Reset(saveGameFile);
 
     I := 0;
 
-    while not eof(saveGameFile) do begin
+    while not eof(saveGameFile) do
+    begin
       readln(saveGameFile, sLine);
 
       case I of
@@ -407,10 +487,11 @@ begin
       end;
 
       I := I + 1;
-      if I > 3 then begin
+      if I > 3 then
+      begin
         I := 0;
-        // addGameObject(x, y, objectType);
-        // writeln('Loaded: ' + objectType + ' at x: ' + inttostr(x) + ' y: ' + inttostr(y));
+        // addGameObject(x, y, objectType); 
+        // writeln('Loaded: ' + objectType + ' at x: ' + inttostr(x) + ' y: ' + inttostr(y)); 
       end;
 
     end;
@@ -460,23 +541,28 @@ begin
   PlayerActualX := 0;
   PlayerActualY := 0;
 
-  for I := 1 to Length(gameObjectTextureNames) do begin
+  for I := 1 to Length(gameObjectTextureNames) do
+  begin
     png := TPngImage.create;
-    T := TResourceStream.create(hInstance, gameObjectTextureNames[I], RT_RCDATA);
+    T := TResourceStream.create(hInstance, gameObjectTextureNames[I],
+      RT_RCDATA);
     png.LoadFromStream(T);
     T.Free;
     gameObjectTextures[I] := png;
   end;
 
-  for I := 1 to Length(growthStageTextureNames) do begin
+  for I := 1 to Length(growthStageTextureNames) do
+  begin
     png := TPngImage.create;
-    T := TResourceStream.create(hInstance, growthStageTextureNames[I], RT_RCDATA);
+    T := TResourceStream.create(hInstance, growthStageTextureNames[I],
+      RT_RCDATA);
     png.LoadFromStream(T);
     T.Free;
     growthStageTextures[I] := png;
   end;
 
-  for I := 1 to Length(grassTileNames) do begin
+  for I := 1 to Length(grassTileNames) do
+  begin
     jpg := TJPEGImage.create;
     T := TResourceStream.create(hInstance, grassTileNames[I], RT_RCDATA);
     jpg.LoadFromStream(T);
@@ -484,7 +570,8 @@ begin
     grassTileImages[I] := jpg;
   end;
 
-  for I := 1 to Length(gameTextureNames) do begin
+  for I := 1 to Length(gameTextureNames) do
+  begin
     try
       gameTextures[I] := TPngImage.create;
       T := TResourceStream.create(hInstance, gameTextureNames[I], RT_RCDATA);
@@ -513,7 +600,8 @@ begin
   heartImage := getTexture('PngImage_17');
   selectedSlotImage := getTexture('selectedSlot');
 
-  for I := 1 to Length(grassTileNames) do begin
+  for I := 1 to Length(grassTileNames) do
+  begin
     jpg := TJPEGImage.create;
     T := TResourceStream.create(hInstance, grassTileNames[I], RT_RCDATA);
     jpg.LoadFromStream(T);
@@ -527,11 +615,14 @@ begin
 
   updateLevelCache;
 
-  // addPlayer(100, 100, 'Test')
+  // addPlayer(100, 100, 'Test') 
+
+  health := 5;
 
 end;
 
-procedure TForm3.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+procedure TForm3.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
 begin
   if Key = Word('P') then
     updateLevelCache;
@@ -543,13 +634,18 @@ begin
     backwardKey := True;
   if Key = Word('D') then
     rightKey := True;
-  if (Ord(Key) = 27) then begin // checks for "escape" key press
-    INC(paused);
-    if ((paused mod 2) = 0) then
-      pauseGame
-    else
-      unpauseGame;
-  end;
+  if Key = Word('K') then
+    removeHealth;
+    
+
+    if (Ord(Key) = 27) then
+    begin // checks for "escape" key press 
+      INC(paused);
+      if ((paused mod 2) = 0) then
+        pauseGame
+      else
+        unpauseGame;
+    end;
 
 end;
 
@@ -579,14 +675,20 @@ begin
   PlayerX := PlayerX + x;
   PlayerY := PlayerY + y;
 
-  for I := 0 to Length(gameObjects) - 1 do begin
-    if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX) and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight) = playerQuadY)) then
+  for I := 0 to Length(gameObjects) - 1 do
+  begin
+    if ((Math.Floor(gameObjects[I].x * 32 / Form3.ClientWidth) = playerQuadX)
+        and (Math.Floor(gameObjects[I].y * 32 / Form3.ClientHeight)
+          = playerQuadY)) then
+    begin
+
+      if (gameObjects[I].objectType = 'brick') then
       begin
 
-      if (gameObjects[I].objectType = 'brick') then begin
-
-        if ((ABS(PlayerX + (playerQuadX * 40 * 32) + 16 - gameObjects[I].x * 32) <= 20) and
-            (ABS(PlayerY + (playerQuadY * 20 * 32) + 16 - gameObjects[I].y * 32) <= 20)) then begin
+        if ((ABS(PlayerX + (playerQuadX * 40 * 32) + 16 - gameObjects[I]
+                .x * 32) <= 20) and (ABS(PlayerY + (playerQuadY * 20 * 32)
+                + 16 - gameObjects[I].y * 32) <= 20)) then
+        begin
 
           PlayerX := PlayerX - x;
           PlayerY := PlayerY - y;
@@ -631,57 +733,69 @@ begin
   if rightKey then
     tryMove(speed, 0);
 
-  // Player Enter Top of screen
-  if PlayerY < -32 then begin
+  // Player Enter Top of screen 
+  if PlayerY < -32 then
+  begin
     PlayerActualY := PlayerActualY - Form3.ClientHeight;
     PlayerY := Form3.ClientHeight - 32;
     writeln('Enter Top');
     setPlayerQuad;
   end
 
-  // Player Enter Bottom of screen
-  else if PlayerY > Form3.ClientHeight - 32 then begin
+  // Player Enter Bottom of screen 
+  else if PlayerY > Form3.ClientHeight - 32 then
+  begin
     PlayerActualY := PlayerActualY + Form3.ClientHeight;
     PlayerY := -32;
     writeln('Enter Bottom');
     setPlayerQuad;
   end
 
-  // Player Enter LeftHand side of screen
-  else if PlayerX < -32 then begin
+  // Player Enter LeftHand side of screen 
+  else if PlayerX < -32 then
+  begin
     PlayerX := Form3.ClientWidth - 32;
     PlayerActualX := PlayerActualX - Form3.ClientWidth;
     writeln('Enter Left');
     setPlayerQuad;
   end
 
-  // Player Enter RightHand side of screen
-  else if PlayerX > Form3.ClientWidth - 32 then begin
+  // Player Enter RightHand side of screen 
+  else if PlayerX > Form3.ClientWidth - 32 then
+  begin
     PlayerX := -32;
     PlayerActualX := PlayerActualX + Form3.ClientWidth;
     writeln('Enter Right');
     setPlayerQuad;
   end;
 
-  // Draws the grass
-  Form3.Image1.canvas.CopyRect(Form3.Image1.canvas.ClipRect, Form3.LevelImage.canvas, Form3.LevelImage.canvas.ClipRect);
+  // Draws the grass 
+  Form3.Image1.canvas.CopyRect(Form3.Image1.canvas.ClipRect,
+    Form3.LevelImage.canvas, Form3.LevelImage.canvas.ClipRect);
 
   Form3.Image1.canvas.Draw(0, 0, objectBitmapCache);
 
   Form3.Image1.canvas.Draw(PlayerX + 16, PlayerY + 16, playerImage);
-  for I := 0 to Length(players) - 1 do begin
+  for I := 0 to Length(players) - 1 do
+  begin
 
     players[I].x := round(lerp(players[I].currentX, players[I].x, 0.92));
-    players[I].y := round(lerp(players[I].currentY, players[I].y,0.92));
+    players[I].y := round(lerp(players[I].currentY, players[I].y, 0.92));
 
-    if ((Math.Floor(players[I].x / (40 * 32)) = playerQuadX) and (Math.Floor(players[I].y / (20 * 32)) = playerQuadY)) then begin
-      Form3.Image1.canvas.Draw(players[I].x - playerQuadX * 40 * 32, players[I].y - playerQuadY * 20 * 32, playerImage2);
+    if ((Math.Floor(players[I].x / (40 * 32)) = playerQuadX) and
+        (Math.Floor(players[I].y / (20 * 32)) = playerQuadY)) then
+    begin
+      Form3.Image1.canvas.Draw(players[I].x - playerQuadX * 40 * 32,
+        players[I].y - playerQuadY * 20 * 32, playerImage2);
     end
-    else begin
-      with Form3.Image1 do begin
+    else
+    begin
+      with Form3.Image1 do
+      begin
         canvas.pen.color := clGreen;
         canvas.pen.width := 1;
-        canvas.MoveTo(players[I].x - playerQuadX * 40 * 32, players[I].y - playerQuadY * 20 * 32);
+        canvas.MoveTo(players[I].x - playerQuadX * 40 * 32,
+          players[I].y - playerQuadY * 20 * 32);
         canvas.LineTo(PlayerX + 32, PlayerY + 32);
       end;
     end;
@@ -692,24 +806,39 @@ begin
   pt := Mouse.CursorPos;
   pt := ScreenToClient(pt);
 
-  if (isMouseDown = True) then begin
-    if ((cursorGridX <> round((pt.x - 16) / 32)) or (cursorGridY <> round((pt.y - 16) / 32))) then begin
-      if isLeftMouseDown then begin
+  if (isMouseDown = True) then
+  begin
+    if ((cursorGridX <> round((pt.x - 16) / 32)) or
+        (cursorGridY <> round((pt.y - 16) / 32))) then
+    begin
+      if isLeftMouseDown then
+      begin
         writeln('DRAG-PLACE');
 
-        addServerObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20, 'brick');
-        addServerObject(round((pt.x - 16) / 32) + playerQuadX * 40, round((pt.y - 16) / 32) + playerQuadY * 20, gameObjectTypes[SelectedSlot + 1]);
+        addServerObject(cursorGridX + playerQuadX * 40,
+          cursorGridY + playerQuadY * 20, 'brick');
+        addServerObject(round((pt.x - 16) / 32) + playerQuadX * 40,
+          round((pt.y - 16) / 32) + playerQuadY * 20,
+          gameObjectTypes[SelectedSlot + 1]);
 
-        addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20, 'brick');
-        addGameObject(round((pt.x - 16) / 32) + playerQuadX * 40, round((pt.y - 16) / 32) + playerQuadY * 20, gameObjectTypes[SelectedSlot + 1]);
+        addGameObject(cursorGridX + playerQuadX * 40,
+          cursorGridY + playerQuadY * 20, 'brick');
+        addGameObject(round((pt.x - 16) / 32) + playerQuadX * 40,
+          round((pt.y - 16) / 32) + playerQuadY * 20,
+          gameObjectTypes[SelectedSlot + 1]);
         updateLevelCache;
       end
-      else begin
+      else
+      begin
         writeln('DRAG-DELETE');
-        removeGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
-        destroyServerObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
-        removeGameObject(round((pt.x - 16) / 32) + playerQuadX * 40, round((pt.y - 16) / 32) + playerQuadY * 20);
-        destroyServerObject(round((pt.x - 16) / 32) + playerQuadX * 40, round((pt.y - 16) / 32) + playerQuadY * 20);
+        removeGameObject(cursorGridX + playerQuadX * 40,
+          cursorGridY + playerQuadY * 20);
+        destroyServerObject(cursorGridX + playerQuadX * 40,
+          cursorGridY + playerQuadY * 20);
+        removeGameObject(round((pt.x - 16) / 32) + playerQuadX * 40,
+          round((pt.y - 16) / 32) + playerQuadY * 20);
+        destroyServerObject(round((pt.x - 16) / 32) + playerQuadX * 40,
+          round((pt.y - 16) / 32) + playerQuadY * 20);
         updateLevelCache;
       end;
     end;
@@ -718,73 +847,93 @@ begin
   cursorGridX := round((pt.x - 16) / 32);
   cursorGridY := round((pt.y - 16) / 32);
 
-  Bmp := TBitmap.Create;
-  bmp.Canvas.Brush.Color := clBlack;
+  // Bmp := TBitmap.Create; 
+  // bmp.Canvas.Brush.Color := clBlack; 
 
-  Bmp.Width := 32;
-  Bmp.Height := 32;
+  // Bmp.Width := 32; 
+  // Bmp.Height := 32; 
 
-  //writeln(); // 0 - 1  125 * range
-
-
-  for X := 0 to 40 do                 //sqrt(sqr(x*32-playerX-16)+sqr(y*32-playery-16))
-    for Y := 0 to 20 do
-      Form3.Image1.Canvas.Draw(x*32, y*32, bmp, Max(0, min(round((sqrt(sqr(x*32-cursorGridX*32-16)+sqr(y*32-cursorGridY*32-16))/2)),round(125*((sin(frame/1000)+1)/2))))+
-        Max(0, min(round((sqrt(sqr(x*32-playerX-16)+sqr(y*32-playerY-16))/2)),round(125*((sin(frame/1000)+1)/2)))));
+  // writeln(); // 0 - 1  125 * range 
 
 
+  // for X := 0 to 40 do                 //sqrt(sqr(x*32-playerX-16)+sqr(y*32-playery-16)) 
+  // for Y := 0 to 20 do 
+  // Form3.Image1.Canvas.Draw(x*32, y*32, bmp, Max(0, min(round((sqrt(sqr(x*32-cursorGridX*32-16)+sqr(y*32-cursorGridY*32-16))/2)),round(125*((sin(frame/1000)+1)/2))))+ 
+  // Max(0, min(round((sqrt(sqr(x*32-playerX-16)+sqr(y*32-playerY-16))/2)),round(125*((sin(frame/1000)+1)/2))))); 
 
-  bmp.Free;
 
-  if gameObjectManagement.getGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20) <> nil then begin
-    Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32, nopeSelectorImage);
+
+  // bmp.Free; 
+
+  if gameObjectManagement.getGameObject(cursorGridX + playerQuadX * 40,
+    cursorGridY + playerQuadY * 20) <> nil then
+  begin
+    Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32,
+      nopeSelectorImage);
   end
-  else begin
+  else
+  begin
     Form3.Image1.canvas.Draw(cursorGridX * 32, cursorGridY * 32, selectorImage);
   end;
 
-  Form3.Image1.canvas.Draw(Form3.ClientWidth - 32, round(Form3.ClientHeight / 2) - 5 * 32, getTexture('Toolbar'));
+  Form3.Image1.canvas.Draw(Form3.ClientWidth - 32,
+    round(Form3.ClientHeight / 2) - 5 * 32, getTexture('Toolbar'));
 
-  Form3.Image1.canvas.Draw(Form3.ClientWidth - 26, (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * SelectedSlot), selectedSlotImage);
+  Form3.Image1.canvas.Draw(Form3.ClientWidth - 26,
+    (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * SelectedSlot),
+    selectedSlotImage);
 
+  for I := 0 to 2 do
+  begin
 
-  for I := 0 to 2 do begin
-
-    Form3.Image1.canvas.StretchDraw(Rect(Form3.ClientWidth - 25, (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I), Form3.ClientWidth - 26 + 18,
-        (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I) + 18), gameObjectTextures[I + 1]);
+    Form3.Image1.canvas.StretchDraw(Rect(Form3.ClientWidth - 25,
+        (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I),
+        Form3.ClientWidth - 26 + 18, (round(Form3.ClientHeight / 2) - 5 * 32)
+          + 12 + (23 * I) + 18), gameObjectTextures[I + 1]);
 
   end;
 
-  Form3.Image1.Canvas.Brush.Style:=bsClear;
-    Form3.Image1.Canvas.Font.Style := [fsItalic];
+  Form3.Image1.canvas.brush.Style := bsClear;
+  Form3.Image1.canvas.Font.Style := [fsItalic];
 
-  if connection = True then begin
-  Form3.Image1.Canvas.Font.Color:=clWhite;
-    Form3.Image1.Canvas.Draw(Form3.ClientWidth-16-(5), 0+(5), connectionImage);
-    Form3.Image1.Canvas.TextOut(Form3.ClientWidth-16-(141), 6, 'Connected to gameserver!');
+  if connection = True then
+  begin
+    Form3.Image1.canvas.Font.color := clwhite;
+    Form3.Image1.canvas.Draw(Form3.ClientWidth - 16 - (5), 0 + (5),
+      connectionImage);
+    Form3.Image1.canvas.TextOut(Form3.ClientWidth - 16 - (141), 6,
+      'Connected to gameserver!');
   end
-  else begin
-  Form3.Image1.Canvas.Font.Color:=clYellow;
-    Form3.Image1.Canvas.Draw(Form3.ClientWidth-16-(5), 0+(5), no_connectionImage);
-    Form3.Image1.Canvas.TextOut(Form3.ClientWidth-16-(81), 6, 'No Connection');
+  else
+  begin
+    Form3.Image1.canvas.Font.color := clYellow;
+    Form3.Image1.canvas.Draw(Form3.ClientWidth - 16 - (5), 0 + (5),
+      no_connectionImage);
+    Form3.Image1.canvas.TextOut(Form3.ClientWidth - 16 - (81), 6,
+      'No Connection');
   end;
 
+  for I := 0 to health - 1 do
+  begin
 
+    Form3.Image1.canvas.Draw(8, 8 + (16) * (I), heartImage);
 
-
-
+  end;
 
   TcpClient1.Receiveln;
 
   setCaption();
 
-  frame := frame +1;
+  frame := frame + 1;
 
   FPS := FPS + 1;
 
 end;
 
-procedure TForm3.Image1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; x, y: Integer);
+
+
+procedure TForm3.Image1MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; x, y: Integer);
 var
   berryBush: TBerryBush;
   I: Integer;
@@ -793,9 +942,14 @@ begin
   isMouseDown := True;
   slotSelect := False;
 
-  for I := 0 to 12 do begin
-    if ((x >= Form3.ClientWidth - 26) and (x <= Form3.ClientWidth - 26 + 320)) then
-      if ((y >= (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I))) and ((y <= (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I) + 20)) then begin
+  for I := 0 to 12 do
+  begin
+    if ((x >= Form3.ClientWidth - 26) and (x <= Form3.ClientWidth - 26 + 320))
+      then
+      if ((y >= (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I))) and
+        ((y <= (round(Form3.ClientHeight / 2) - 5 * 32) + 12 + (23 * I) + 20))
+        then
+      begin
         writeln('Selected Slot: ' + inttostr(I));
         SelectedSlot := I;
         slotSelect := True;
@@ -808,25 +962,39 @@ begin
   else if Button = mbRight then
     isLeftMouseDown := False;
 
-  if slotSelect <> True then begin
-    if isLeftMouseDown then begin
-      berryBush := getBushObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
-      if berryBush <> nil then begin
+  if slotSelect <> True then
+  begin
+    if isLeftMouseDown then
+    begin
+      berryBush := getBushObject(cursorGridX + playerQuadX * 40,
+        cursorGridY + playerQuadY * 20);
+      if berryBush <> nil then
+      begin
         writeln('HARVEST');
         if (berryBush.growthStage > 1) then
+        begin
           berryBush.growthStage := berryBush.growthStage - 1;
+
+        end;
       end
-      else begin
+      else
+      begin
         writeln('PLACE');
-        addServerObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20, gameObjectTypes[SelectedSlot + 1]);
-        addGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20, gameObjectTypes[SelectedSlot + 1]);
+        addServerObject(cursorGridX + playerQuadX * 40,
+          cursorGridY + playerQuadY * 20, gameObjectTypes[SelectedSlot + 1]);
+        addGameObject(cursorGridX + playerQuadX * 40,
+          cursorGridY + playerQuadY * 20,
+          gameObjectTypes[SelectedSlot + 1]);
       end;
       updateLevelCache;
     end
-    else begin
+    else
+    begin
       writeln('DELETE');
-      removeGameObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
-      destroyServerObject(cursorGridX + playerQuadX * 40, cursorGridY + playerQuadY * 20);
+      removeGameObject(cursorGridX + playerQuadX * 40,
+        cursorGridY + playerQuadY * 20);
+      destroyServerObject(cursorGridX + playerQuadX * 40,
+        cursorGridY + playerQuadY * 20);
       updateLevelCache;
     end;
 
@@ -834,7 +1002,8 @@ begin
 
 end;
 
-procedure TForm3.Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; x, y: Integer);
+procedure TForm3.Image1MouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; x, y: Integer);
 begin
   isMouseDown := False;
 
@@ -849,35 +1018,38 @@ procedure TForm3.pauseGame;
 begin
   gameLoop.enabled := False;
   FpsReset.enabled := False;
-  Form3.Image1.canvas.Draw(0, 0, pauseScreen);
+  Form3.Image1.canvas.StretchDraw(Rect(0, 0, Form3.width, Form3.height),
+    pauseScreen);
 end;
 
 procedure TForm3.reconnectTimerTimer(Sender: TObject);
 begin
-TcpClient1.Disconnect;
-TcpClient1.Connect;
-reconnectTimer.Enabled := False;
-writeln('Attempting to reconnect!');
-connection := True;
+  TcpClient1.Disconnect;
+  TcpClient1.Connect;
+  reconnectTimer.enabled := False;
+  writeln('Attempting to reconnect!');
+  connection := True;
 end;
 
 procedure TForm3.TcpClient1Connect(Sender: TObject);
 begin
-writeln('CLIENT HAS CONNECTED');
+  writeln('CLIENT HAS CONNECTED');
 end;
 
 procedure TForm3.TcpClient1Error(Sender: TObject; SocketError: Integer);
 begin
 
-  if ((socketError = 10057) or (socketError = 10054)) then begin
-  connection := False;
-    reconnectTimer.Enabled := True;
+  if ((SocketError = 10057) or (SocketError = 10054)) then
+  begin
+    connection := False;
+    reconnectTimer.enabled := True;
   end
   else if (SocketError <> 10035) then
     writeln(SocketError);
 end;
 
-procedure TForm3.TcpClient1Receive(Sender: TObject; Buf: PAnsiChar; var DataLen: Integer);
+procedure TForm3.TcpClient1Receive(Sender: TObject; Buf: PAnsiChar;
+  var DataLen: Integer);
 var
   data, event: String;
 var
@@ -887,60 +1059,79 @@ var
 begin
   data := Buf;
 
-  if (data[Length(data)] = ';') then begin
+  if (data[Length(data)] = ';') then
+  begin
     outString := recieveString + data;
 
-    while (POS(';', outString) <> 0) do begin
-      writeln('Recieved Full String: '+Copy(outString, 0, POS(';', outString)));
+    while (POS(';', outString) <> 0) do
+    begin
+      writeln('Recieved Full String: ' + Copy(outString, 0,
+          POS(';', outString)));
 
-
-            x := SO(Copy(outString, 0, POS(';', outString) - 1));
+      x := SO(Copy(outString, 0, POS(';', outString) - 1));
       event := x['event'].AsString;
 
-      if event = 'Ready' then begin
+      if event = 'Ready' then
+      begin
         writeln('Connected to GameServer Successfully!');
-        TcpClient1.Sendln('{"event": "movement", "x": ' + inttostr(PlayerX + PlayerActualX) + ', "y": ' + inttostr(PlayerY + PlayerActualY) + '};')
+        TcpClient1.Sendln('{"event": "movement", "x": ' + inttostr
+            (PlayerX + PlayerActualX) + ', "y": ' + inttostr
+            (PlayerY + PlayerActualY) + '};')
       end
-      else if event = 'playersUpdate' then begin
+      else if event = 'playersUpdate' then
+      begin
         serverPlayers := x['players'].AsArray;
-        for I := 0 to serverPlayers.Length - 1 do begin
-          if (getPlayer(serverPlayers[I].O['id'].AsString) = nil) then begin
+        for I := 0 to serverPlayers.Length - 1 do
+        begin
+          if (getPlayer(serverPlayers[I].O['id'].AsString) = nil) then
+          begin
             writeln('Creating Player: ' + serverPlayers[I].O['id'].AsString);
-            addPlayer(serverPlayers[I].O['x'].AsInteger, serverPlayers[I].O['y'].AsInteger, serverPlayers[I].O['id'].AsString);
+            addPlayer(serverPlayers[I].O['x'].AsInteger,
+              serverPlayers[I].O['y'].AsInteger,
+              serverPlayers[I].O['id'].AsString);
           end;
         end;
       end
-      else if event = 'updateGameObjects' then begin
+      else if event = 'updateGameObjects' then
+      begin
 
         SetLength(gameObjects, 0);
 
-        for I := 0 to x['gameObjects'].AsArray.Length - 1 do begin
-          addGameObject(x['gameObjects'].AsArray[I].O['x'].AsInteger, x['gameObjects'].AsArray[I].O['y'].AsInteger,
+        for I := 0 to x['gameObjects'].AsArray.Length - 1 do
+        begin
+          addGameObject(x['gameObjects'].AsArray[I].O['x'].AsInteger,
+            x['gameObjects'].AsArray[I].O['y'].AsInteger,
             x['gameObjects'].AsArray[I].O['objectType'].AsString);
         end;
         updateLevelCache;
       end
 
-      else if event = 'movement' then begin
+      else if event = 'movement' then
+      begin
 
-        for I := 0 to Length(players) - 1 do begin
-          if players[I].id = x['id'].AsString then begin
+        for I := 0 to Length(players) - 1 do
+        begin
+          if players[I].id = x['id'].AsString then
+          begin
             players[I].currentX := x['x'].AsInteger;
             players[I].currentY := x['y'].AsInteger;
           end;
         end;
       end
-      else if event = 'modifyServerObject' then begin
-        if (x['method'].AsString = 'create') then begin
-          addGameObject(x['x'].AsInteger, x['y'].AsInteger, x['objectType'].AsString);
+      else if event = 'modifyServerObject' then
+      begin
+        if (x['method'].AsString = 'create') then
+        begin
+          addGameObject(x['x'].AsInteger, x['y'].AsInteger,
+            x['objectType'].AsString);
           updateLevelCache;
         end;
-        if (x['method'].AsString = 'destroy') then begin
+        if (x['method'].AsString = 'destroy') then
+        begin
           removeGameObject(x['x'].AsInteger, x['y'].AsInteger);
           updateLevelCache;
         end;
       end;
-
 
       outString := Copy(outString, POS(';', outString) + 1);
     end;
@@ -953,12 +1144,15 @@ end;
 
 procedure TForm3.Timer1Timer(Sender: TObject);
 begin
-  TcpClient1.Sendln('{"event": "movement", "x": ' + inttostr(PlayerX + PlayerActualX) + ', "y": ' + inttostr(PlayerY + PlayerActualY) + '};');
+  TcpClient1.Sendln('{"event": "movement", "x": ' + inttostr
+      (PlayerX + PlayerActualX) + ', "y": ' + inttostr
+      (PlayerY + PlayerActualY) + '};');
 end;
 
 procedure TForm3.unpauseGame;
 begin
-  if (gameLoop.enabled = False) or (FpsReset.enabled = False) then begin
+  if (gameLoop.enabled = False) or (FpsReset.enabled = False) then
+  begin
     gameLoop.enabled := True;
     FpsReset.enabled := True;
   end;
